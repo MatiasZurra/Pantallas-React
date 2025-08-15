@@ -16,14 +16,24 @@ const menuItems = [
     label: "Dashboard",
   },
   {
+    key: "nuevo-pedido",
+    icon: <ShopOutlined style={{ color: '#faad14' }} />,
+    label: "Nuevo Pedido",
+  },
+  {
     key: "productos",
     icon: <ShopOutlined />,
     label: "Productos",
   },
   {
-    key: "usuarios",
-    icon: <UserOutlined />,
-    label: "Usuarios",
+    key: "clientes",
+    icon: <UserOutlined style={{ color: '#1677ff' }} />,
+    label: "Clientes",
+  },
+  {
+    key: "proveedores",
+    icon: <UserOutlined style={{ color: '#13c2c2' }} />,
+    label: "Proveedores",
   },
   {
     key: "reportes",
