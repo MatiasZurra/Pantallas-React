@@ -16,29 +16,39 @@ const menuItems = [
     label: "Dashboard",
   },
   {
-    key: "nuevo-pedido",
+    key: "ventas",
+    icon: <ShopOutlined style={{ color: '#1677ff' }} />,
+    label: "Ventas",
+  },
+  {
+    key: "compras",
+    icon: <ShopOutlined style={{ color: '#13c2c2' }} />,
+    label: "Compras",
+  },
+  {
+    key: "produccion",
     icon: <ShopOutlined style={{ color: '#faad14' }} />,
-    label: "Nuevo Pedido",
+    label: "Producción",
   },
   {
-    key: "productos",
-    icon: <ShopOutlined />,
-    label: "Productos",
+    key: "mantenimiento",
+    icon: <ShopOutlined style={{ color: '#eb2f96' }} />,
+    label: "Mantenimiento",
   },
   {
-    key: "clientes",
-    icon: <UserOutlined style={{ color: '#1677ff' }} />,
-    label: "Clientes",
-  },
-  {
-    key: "proveedores",
-    icon: <UserOutlined style={{ color: '#13c2c2' }} />,
-    label: "Proveedores",
+    key: "stock",
+    icon: <ShopOutlined style={{ color: '#722ed1' }} />,
+    label: "Stock",
   },
   {
     key: "reportes",
     icon: <BarChartOutlined />,
     label: "Reportes",
+  },
+  {
+    key: "maestros",
+    icon: <UserOutlined style={{ color: '#52c41a' }} />,
+    label: "Maestros",
   },
 ];
 
