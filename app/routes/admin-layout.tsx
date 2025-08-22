@@ -19,11 +19,55 @@ const menuItems = [
     key: "ventas",
     icon: <ShopOutlined style={{ color: '#1677ff' }} />,
     label: "Ventas",
+    children: [
+      {
+        key: "ventas/presupuesto",
+        label: "Presupuesto",
+      },
+      {
+        key: "ventas/orden-pedido",
+        label: "Orden de pedido",
+      },
+      {
+        key: "ventas/comprobantes",
+        label: "Comprobantes",
+      },
+      {
+        key: "ventas/remitos",
+        label: "Remitos",
+      },
+      {
+        key: "ventas/pagos-cliente",
+        label: "Pagos de cliente",
+      },
+    ],
   },
   {
     key: "compras",
     icon: <ShopOutlined style={{ color: '#13c2c2' }} />,
     label: "Compras",
+    children: [
+      {
+        key: "compras/presupuesto",
+        label: "Presupuesto",
+      },
+      {
+        key: "compras/orden-compra",
+        label: "Orden de compra",
+      },
+      {
+        key: "compras/comprobantes",
+        label: "Comprobantes",
+      },
+      {
+        key: "compras/remitos",
+        label: "Remitos",
+      },
+      {
+        key: "compras/pagos-proveedor",
+        label: "Pagos a proveedor",
+      },
+    ],
   },
   {
     key: "produccion",
