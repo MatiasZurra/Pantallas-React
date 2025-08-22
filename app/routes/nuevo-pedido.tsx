@@ -25,7 +25,7 @@ export default function NuevoPedido() {
             <>
               <label style={{ fontWeight: 500, marginBottom: 8, display: 'block' }}>Productos</label>
               {fields.map((field, idx) => (
-                <Space key={field.key} align="baseline" style={{ display: 'flex', marginBottom: 8 }}>
+                <Space key={String(field.key)} align="baseline" style={{ display: 'flex', marginBottom: 8 }}>
                   <Form.Item
                     {...field}
                     name={[field.name, 'nombre']}
