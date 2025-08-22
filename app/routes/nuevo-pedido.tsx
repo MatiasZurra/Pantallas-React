@@ -29,7 +29,6 @@ export default function NuevoPedido() {
                   <Form.Item
                     {...field}
                     name={[field.name, 'nombre']}
-                    fieldKey={[field.fieldKey, 'nombre']}
                     rules={[{ required: true, message: 'Ingrese el producto' }]}
                     style={{ margin: 0 }}
                   >
@@ -38,7 +37,6 @@ export default function NuevoPedido() {
                   <Form.Item
                     {...field}
                     name={[field.name, 'cantidad']}
-                    fieldKey={[field.fieldKey, 'cantidad']}
                     rules={[{ required: true, message: 'Ingrese la cantidad' }]}
                     style={{ margin: 0 }}
                   >
