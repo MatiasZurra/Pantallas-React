@@ -172,7 +172,7 @@ export default function Maestros() {
             onChange={e => setBusqueda(e.target.value)}
           />
           <Button type="primary" onClick={() => setModalOpen(true)}>
-            Nuevo {maestros.find((m) => m.key === maestro)?.label}
+            Añadir {maestros.find((m) => m.key === maestro)?.label}
           </Button>
         </div>
         <Table
@@ -185,15 +185,77 @@ export default function Maestros() {
         />
         <Modal
           open={modalOpen}
-          title={`Nuevo ${maestros.find((m) => m.key === maestro)?.label}`}
+          title={`Añadir ${maestros.find((m) => m.key === maestro)?.label}`}
           onCancel={() => setModalOpen(false)}
           onOk={() => setModalOpen(false)}
         >
           <Form form={form} layout="vertical">
-            <Form.Item label="Nombre" name="nombre" required>
-              <Input />
-            </Form.Item>
-            {/* Aquí podrías agregar más campos según el maestro */}
+            {maestro === "proveedores" && (
+              <>
+              <Form.Item label="Razon Social" name="RazonSocial" required>
+                  <Input />
+                </Form.Item>
+                <Form.Item label="CUIT" name="cuit" required>
+                  <Input />
+                </Form.Item>
+                <Form.Item label="Teléfono" name="telefono" required>
+                  <Input />
+                </Form.Item>
+                <Form.Item label="Email" name="email" required>
+                  <Input type="email" />
+                </Form.Item>
+                <Form.Item label="Dirección" name="direccion" required>
+                  <Input />
+                </Form.Item>
+              </>
+            )}
+            {maestro === "clientes" && (
+              <>
+                <Form.Item label="Razon Social" name="RazonSocial" required>
+                  <Input />
+                </Form.Item>
+                <Form.Item label="Teléfono" name="telefono" required>
+                  <Input />
+                </Form.Item>
+                <Form.Item label="Email" name="email" required>
+                  <Input type="email" />
+                </Form.Item>
+                <Form.Item label="Dirección" name="direccion" required>
+                  <Input />
+                </Form.Item>
+              </>
+            )}
+            {maestro === "empleados" && (
+              <>
+                <Form.Item label="Nombre" name="nombre" required>
+                  <Input />
+                </Form.Item>
+                <Form.Item label="Apellido" name="apellido" required>
+                  <Input />
+                </Form.Item>
+                <Form.Item label="CUIL" name="cuil" required>
+                  <Input />
+                </Form.Item>
+                <Form.Item label="Fecha de nacimiento" name="fechaNacimiento" required>
+                  <Input type="date" />
+                </Form.Item>
+                <Form.Item label="DNI" name="dni" required>
+                  <Input />
+                </Form.Item>
+                <Form.Item label="Teléfono" name="telefono" required>
+                  <Input />
+                </Form.Item>
+                <Form.Item label="Hora de entrada" name="horaEntrada" required>
+                  <Input type="time" />
+                </Form.Item>
+                <Form.Item label="Hora de salida" name="horaSalida" required>
+                  <Input type="time" />
+                </Form.Item>
+                <Form.Item label="Dirección" name="direccion" required>
+                  <Input />
+                </Form.Item>
+              </>
+            )}
           </Form>
         </Modal>
       </Content>
