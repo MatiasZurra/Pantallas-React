@@ -26,8 +26,9 @@ const maestros = [
 ];
 
 type MaestroKey = keyof typeof dataEjemplo;
-type Cliente = { key: number; nombre: string; telefono: string; email: string };
-type Proveedor = { key: number; nombre: string; telefono: string; email: string };
+type Cliente = { key: number; nombre: string; telefono: string; email: string; cuit_dni: string; direccion: string
+};
+type Proveedor = { key: number; nombre: string; telefono: string; email: string; cuit: string };
 type Producto = { key: number; nombre: string; categoria: string };
 type Materia = { key: number; nombre: string; stock: number };
 type Receta = { key: number; nombre: string };
@@ -48,11 +49,11 @@ type MaestroData = {
 
 const dataEjemplo: MaestroData = {
   clientes: [
-    { key: 1, nombre: "Juan Pérez", telefono: "123456789", email: "juan@mail.com" },
-    { key: 2, nombre: "Ana López", telefono: "987654321", email: "ana@mail.com" },
+    { key: 1, nombre: "Juan Pérez", telefono: "123456789",cuit_dni:'36.674.908', email: "juan@mail.com", direccion: "Calle Falsa 123" },
+    { key: 2, nombre: "Ana López", telefono: "987654321", cuit_dni:'54.746.398',email: "ana@mail.com", direccion: "Av. Siempre Viva 456"},
   ],
   proveedores: [
-    { key: 1, nombre: "Molinos SA", telefono: "111222333", email: "ventas@molinos.com" },
+    { key: 1, nombre: "Molinos SA", telefono: "111222333", email: "ventas@molinos.com", cuit:"33-13453765-2" },
   ],
   productos: [
     { key: 1, nombre: "Ravioles", categoria: "Pasta rellena" },
@@ -87,6 +88,8 @@ const columnas: { [K in MaestroKey]: ColumnType[] } = {
     { title: "Nombre", dataIndex: "nombre" },
     { title: "Teléfono", dataIndex: "telefono" },
     { title: "Email", dataIndex: "email" },
+    { title: "CUIT/DNI", dataIndex: "cuit_dni" },
+    { title: "Dirección", dataIndex: "direccion" },
   { title: "Acciones", key: "acciones", render: function(_: unknown, record: any, i: number): React.ReactNode { return <AccionesTabla record={record} maestro="clientes" /> } },
   ],
   proveedores: [
@@ -214,6 +217,9 @@ export default function Maestros() {
                 <Form.Item label="Razon Social" name="RazonSocial" required>
                   <Input />
                 </Form.Item>
+                 <Form.Item label="DNI/CUIT" name="dni_cuit" required>
+                  <Input />
+                </Form.Item>
                 <Form.Item label="Teléfono" name="telefono" required>
                   <Input />
                 </Form.Item>
@@ -238,9 +244,6 @@ export default function Maestros() {
                 </Form.Item>
                 <Form.Item label="Fecha de nacimiento" name="fechaNacimiento" required>
                   <Input type="date" />
-                </Form.Item>
-                <Form.Item label="DNI" name="dni" required>
-                  <Input />
                 </Form.Item>
                 <Form.Item label="Teléfono" name="telefono" required>
                   <Input />
