@@ -1,6 +1,12 @@
 import React, { useState } from "react";
 import { Table, Button, Modal, Form, Input, Space } from "antd";
 
+type ProductoPresupuesto = {
+  nombre: string;
+  cantidad: number;
+  precioUnitario: number;
+};
+
 type Presupuesto = {
   key: number;
   idPresupuesto: string;
@@ -8,6 +14,7 @@ type Presupuesto = {
   fecha: string;
   nombreCliente: string;
   total: number;
+  productos: ProductoPresupuesto[];
 };
 
 const datosEjemplo: Presupuesto[] = [
@@ -17,7 +24,11 @@ const datosEjemplo: Presupuesto[] = [
     idCliente: "CL-01",
     fecha: "2025-09-24",
     nombreCliente: "Juan Pérez",
-    total: 12000
+    total: 12000,
+    productos: [
+      { nombre: "Producto A", cantidad: 2, precioUnitario: 3000 },
+      { nombre: "Producto B", cantidad: 1, precioUnitario: 6000 },
+    ],
   },
   {
     key: 2,
@@ -25,14 +36,21 @@ const datosEjemplo: Presupuesto[] = [
     idCliente: "CL-02",
     fecha: "2025-09-25",
     nombreCliente: "Ana López",
-    total: 18000
+    total: 18000,
+    productos: [
+      { nombre: "Producto C", cantidad: 3, precioUnitario: 4000 },
+      { nombre: "Producto D", cantidad: 2, precioUnitario: 3000 },
+    ],
   },
 ];
+
 
 export default function PresupuestoVentas() {
   const [data, setData] = useState<Presupuesto[]>(datosEjemplo);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Presupuesto | null>(null);
+  const [detalleOpen, setDetalleOpen] = useState(false);
+  const [detalle, setDetalle] = useState<Presupuesto | null>(null);
   const [form] = Form.useForm();
 
   const handleAdd = () => {
@@ -77,6 +95,7 @@ export default function PresupuestoVentas() {
         <Space>
           <Button size="small" onClick={() => handleEdit(record)}>Editar</Button>
           <Button size="small" danger onClick={() => handleDelete(record.key)}>Eliminar</Button>
+          <Button size="small" onClick={() => { setDetalle(record); setDetalleOpen(true); }}>Ver detalle</Button>
         </Space>
       ),
     },
@@ -102,6 +121,41 @@ export default function PresupuestoVentas() {
           <Form.Item label="Cliente" name="nombreCliente" rules={[{ required: true, message: "Ingrese el nombre del cliente" }]}> <Input /> </Form.Item>
           <Form.Item label="Total" name="total" rules={[{ required: true, message: "Ingrese el total" }]}> <Input type="number" /> </Form.Item>
         </Form>
+      </Modal>
+      <Modal
+        open={detalleOpen}
+        title="Detalle de presupuesto"
+        onCancel={() => { setDetalleOpen(false); setDetalle(null); }}
+        footer={null}
+      >
+        {detalle && (
+          <div>
+            <p><b>ID Presupuesto:</b> {detalle.idPresupuesto}</p>
+            <p><b>ID Cliente:</b> {detalle.idCliente}</p>
+            <p><b>Fecha:</b> {detalle.fecha}</p>
+            <p><b>Cliente:</b> {detalle.nombreCliente}</p>
+            <p><b>Total:</b> {detalle.total}</p>
+            <b>Productos:</b>
+            <table style={{ width: '100%', marginTop: 8, borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Producto</th>
+                  <th style={{ borderBottom: '1px solid #ccc', textAlign: 'right' }}>Cantidad</th>
+                  <th style={{ borderBottom: '1px solid #ccc', textAlign: 'right' }}>Precio unitario</th>
+                </tr>
+              </thead>
+              <tbody>
+                {detalle.productos.map((prod, idx) => (
+                  <tr key={idx}>
+                    <td>{prod.nombre}</td>
+                    <td style={{ textAlign: 'right' }}>{prod.cantidad}</td>
+                    <td style={{ textAlign: 'right' }}>${prod.precioUnitario}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </Modal>
     </div>
   );

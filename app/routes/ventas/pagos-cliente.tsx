@@ -1,6 +1,12 @@
 import React, { useState } from "react";
 import { Table, Button, Modal, Form, Input, Space } from "antd";
 
+type ProductoPago = {
+  nombre: string;
+  cantidad: number;
+  precioUnitario: number;
+};
+
 type PagoCliente = {
   key: number;
   idPago: string;
@@ -8,6 +14,7 @@ type PagoCliente = {
   fecha: string;
   nombreCliente: string;
   monto: number;
+  productos: ProductoPago[];
 };
 
 const datosEjemplo: PagoCliente[] = [
@@ -17,7 +24,11 @@ const datosEjemplo: PagoCliente[] = [
     idCliente: "CL-01",
     fecha: "2025-09-24",
     nombreCliente: "Juan Pérez",
-    monto: 5000
+    monto: 5000,
+    productos: [
+      { nombre: "Producto A", cantidad: 2, precioUnitario: 1000 },
+      { nombre: "Producto B", cantidad: 1, precioUnitario: 3000 },
+    ],
   },
   {
     key: 2,
@@ -25,7 +36,11 @@ const datosEjemplo: PagoCliente[] = [
     idCliente: "CL-02",
     fecha: "2025-09-25",
     nombreCliente: "Ana López",
-    monto: 7000
+    monto: 7000,
+    productos: [
+      { nombre: "Producto C", cantidad: 3, precioUnitario: 2000 },
+      { nombre: "Producto D", cantidad: 1, precioUnitario: 1000 },
+    ],
   },
 ];
 
@@ -33,6 +48,8 @@ export default function PagosClienteVentas() {
   const [data, setData] = useState<PagoCliente[]>(datosEjemplo);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<PagoCliente | null>(null);
+  const [detalleOpen, setDetalleOpen] = useState(false);
+  const [detalle, setDetalle] = useState<PagoCliente | null>(null);
   const [form] = Form.useForm();
 
   const handleAdd = () => {
@@ -77,6 +94,7 @@ export default function PagosClienteVentas() {
         <Space>
           <Button size="small" onClick={() => handleEdit(record)}>Editar</Button>
           <Button size="small" danger onClick={() => handleDelete(record.key)}>Eliminar</Button>
+          <Button size="small" onClick={() => { setDetalle(record); setDetalleOpen(true); }}>Ver detalle</Button>
         </Space>
       ),
     },
@@ -102,6 +120,41 @@ export default function PagosClienteVentas() {
           <Form.Item label="Cliente" name="nombreCliente" rules={[{ required: true, message: "Ingrese el nombre del cliente" }]}> <Input /> </Form.Item>
           <Form.Item label="Monto" name="monto" rules={[{ required: true, message: "Ingrese el monto" }]}> <Input type="number" /> </Form.Item>
         </Form>
+      </Modal>
+      <Modal
+        open={detalleOpen}
+        title="Detalle de pago"
+        onCancel={() => { setDetalleOpen(false); setDetalle(null); }}
+        footer={null}
+      >
+        {detalle && (
+          <div>
+            <p><b>ID Pago:</b> {detalle.idPago}</p>
+            <p><b>ID Cliente:</b> {detalle.idCliente}</p>
+            <p><b>Fecha:</b> {detalle.fecha}</p>
+            <p><b>Cliente:</b> {detalle.nombreCliente}</p>
+            <p><b>Monto:</b> {detalle.monto}</p>
+            <b>Productos pagados:</b>
+            <table style={{ width: '100%', marginTop: 8, borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Producto</th>
+                  <th style={{ borderBottom: '1px solid #ccc', textAlign: 'right' }}>Cantidad</th>
+                  <th style={{ borderBottom: '1px solid #ccc', textAlign: 'right' }}>Precio unitario</th>
+                </tr>
+              </thead>
+              <tbody>
+                {detalle.productos.map((prod, idx) => (
+                  <tr key={idx}>
+                    <td>{prod.nombre}</td>
+                    <td style={{ textAlign: 'right' }}>{prod.cantidad}</td>
+                    <td style={{ textAlign: 'right' }}>${prod.precioUnitario}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </Modal>
     </div>
   );

@@ -1,13 +1,18 @@
 import React, { useState } from "react";
 import { Table, Button, Modal, Form, Input, Space } from "antd";
 
+type ProductoRemito = {
+  nombre: string;
+  cantidad: number;
+};
+
 type Remito = {
   key: number;
   idRemito: string;
   idCliente: string;
   fecha: string;
   nombreCliente: string;
-  total: number;
+  productos: ProductoRemito[];
 };
 
 const datosEjemplo: Remito[] = [
@@ -17,7 +22,10 @@ const datosEjemplo: Remito[] = [
     idCliente: "CL-01",
     fecha: "2025-09-24",
     nombreCliente: "Juan Pérez",
-    total: 8000
+    productos: [
+      { nombre: "Producto A", cantidad: 2 },
+      { nombre: "Producto B", cantidad: 1 },
+    ],
   },
   {
     key: 2,
@@ -25,7 +33,10 @@ const datosEjemplo: Remito[] = [
     idCliente: "CL-02",
     fecha: "2025-09-25",
     nombreCliente: "Ana López",
-    total: 12000
+    productos: [
+      { nombre: "Producto C", cantidad: 3 },
+      { nombre: "Producto D", cantidad: 2 },
+    ],
   },
 ];
 
@@ -33,6 +44,8 @@ export default function RemitosVentas() {
   const [data, setData] = useState<Remito[]>(datosEjemplo);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Remito | null>(null);
+  const [detalleOpen, setDetalleOpen] = useState(false);
+  const [detalle, setDetalle] = useState<Remito | null>(null);
   const [form] = Form.useForm();
 
   const handleAdd = () => {
@@ -69,7 +82,11 @@ export default function RemitosVentas() {
     { title: "ID Cliente", dataIndex: "idCliente" },
     { title: "Fecha", dataIndex: "fecha" },
     { title: "Cliente", dataIndex: "nombreCliente" },
-    { title: "Cantidad", dataIndex: "total" },
+    {
+      title: "Cantidad",
+      key: "cantidad",
+      render: (_: any, record: Remito) => record.productos.reduce((acc, prod) => acc + prod.cantidad, 0),
+    },
     {
       title: "Acciones",
       key: "acciones",
@@ -77,6 +94,7 @@ export default function RemitosVentas() {
         <Space>
           <Button size="small" onClick={() => handleEdit(record)}>Editar</Button>
           <Button size="small" danger onClick={() => handleDelete(record.key)}>Eliminar</Button>
+          <Button size="small" onClick={() => { setDetalle(record); setDetalleOpen(true); }}>Ver detalle</Button>
         </Space>
       ),
     },
@@ -102,6 +120,38 @@ export default function RemitosVentas() {
           <Form.Item label="Cliente" name="nombreCliente" rules={[{ required: true, message: "Ingrese el nombre del cliente" }]}> <Input /> </Form.Item>
           <Form.Item label="Cantidad" name="total" rules={[{ required: true, message: "Ingrese el total" }]}> <Input type="number" /> </Form.Item>
         </Form>
+      </Modal>
+      <Modal
+        open={detalleOpen}
+        title="Detalle de remito"
+        onCancel={() => { setDetalleOpen(false); setDetalle(null); }}
+        footer={null}
+      >
+        {detalle && (
+          <div>
+            <p><b>ID Remito:</b> {detalle.idRemito}</p>
+            <p><b>ID Cliente:</b> {detalle.idCliente}</p>
+            <p><b>Fecha:</b> {detalle.fecha}</p>
+            <p><b>Cliente:</b> {detalle.nombreCliente}</p>
+            <b>Productos:</b>
+            <table style={{ width: '100%', marginTop: 8, borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Producto</th>
+                  <th style={{ borderBottom: '1px solid #ccc', textAlign: 'right' }}>Cantidad</th>
+                </tr>
+              </thead>
+              <tbody>
+                {detalle.productos.map((prod, idx) => (
+                  <tr key={idx}>
+                    <td>{prod.nombre}</td>
+                    <td style={{ textAlign: 'right' }}>{prod.cantidad}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </Modal>
     </div>
   );

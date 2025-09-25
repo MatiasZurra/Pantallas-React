@@ -1,6 +1,12 @@
 import React, { useState } from "react";
 import { Table, Button, Modal, Form, Input, Space } from "antd";
 
+type ProductoPedido = {
+  nombre: string;
+  cantidad: number;
+  precioUnitario: number;
+};
+
 type OrdenPedido = {
   key: number;
   idPedido: string;
@@ -12,6 +18,7 @@ type OrdenPedido = {
   envio: boolean;
   cliente: string;
   empleado: string;
+  productos: ProductoPedido[];
 };
 
 const datosEjemplo: OrdenPedido[] = [
@@ -25,7 +32,11 @@ const datosEjemplo: OrdenPedido[] = [
     horaEntrega: "14:00",
     envio: true,
     cliente: "Juan Pérez",
-    empleado: "Carlos Díaz"
+    empleado: "Carlos Díaz",
+    productos: [
+      { nombre: "Producto X", cantidad: 2, precioUnitario: 2000 },
+      { nombre: "Producto Y", cantidad: 1, precioUnitario: 5000 },
+    ],
   },
   {
     key: 2,
@@ -37,7 +48,11 @@ const datosEjemplo: OrdenPedido[] = [
     horaEntrega: "10:30",
     envio: false,
     cliente: "Ana López",
-    empleado: "María Gómez"
+    empleado: "María Gómez",
+    productos: [
+      { nombre: "Producto Z", cantidad: 3, precioUnitario: 1500 },
+      { nombre: "Producto W", cantidad: 2, precioUnitario: 2500 },
+    ],
   },
 ];
 
@@ -45,6 +60,8 @@ export default function OrdenPedidoVentas() {
   const [data, setData] = useState<OrdenPedido[]>(datosEjemplo);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<OrdenPedido | null>(null);
+  const [detalleOpen, setDetalleOpen] = useState(false);
+  const [detalle, setDetalle] = useState<OrdenPedido | null>(null);
   const [form] = Form.useForm();
 
   const handleAdd = () => {
@@ -93,6 +110,7 @@ export default function OrdenPedidoVentas() {
         <Space>
           <Button size="small" onClick={() => handleEdit(record)}>Editar</Button>
           <Button size="small" danger onClick={() => handleDelete(record.key)}>Eliminar</Button>
+          <Button size="small" onClick={() => { setDetalle(record); setDetalleOpen(true); }}>Ver detalle</Button>
         </Space>
       ),
     },
@@ -122,6 +140,45 @@ export default function OrdenPedidoVentas() {
           <Form.Item label="Cliente (Nombre)" name="cliente" rules={[{ required: true, message: "Ingrese el nombre del cliente" }]}> <Input /> </Form.Item>
           <Form.Item label="Empleado (Nombre)" name="empleado" rules={[{ required: true, message: "Ingrese el nombre del empleado" }]}> <Input /> </Form.Item>
         </Form>
+      </Modal>
+      <Modal
+        open={detalleOpen}
+        title="Detalle de orden de pedido"
+        onCancel={() => { setDetalleOpen(false); setDetalle(null); }}
+        footer={null}
+      >
+        {detalle && (
+          <div>
+            <p><b>ID Pedido:</b> {detalle.idPedido}</p>
+            <p><b>ID Cliente:</b> {detalle.idCliente}</p>
+            <p><b>ID Empleado:</b> {detalle.idEmpleado}</p>
+            <p><b>Fecha de pedido:</b> {detalle.fechaPedido}</p>
+            <p><b>Fecha de entrega:</b> {detalle.fechaEntrega}</p>
+            <p><b>Hora de entrega:</b> {detalle.horaEntrega}</p>
+            <p><b>Envío:</b> {detalle.envio ? 'Sí' : 'No'}</p>
+            <p><b>Cliente:</b> {detalle.cliente}</p>
+            <p><b>Empleado:</b> {detalle.empleado}</p>
+            <b>Productos:</b>
+            <table style={{ width: '100%', marginTop: 8, borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Producto</th>
+                  <th style={{ borderBottom: '1px solid #ccc', textAlign: 'right' }}>Cantidad</th>
+                  <th style={{ borderBottom: '1px solid #ccc', textAlign: 'right' }}>Precio unitario</th>
+                </tr>
+              </thead>
+              <tbody>
+                {detalle.productos.map((prod, idx) => (
+                  <tr key={idx}>
+                    <td>{prod.nombre}</td>
+                    <td style={{ textAlign: 'right' }}>{prod.cantidad}</td>
+                    <td style={{ textAlign: 'right' }}>${prod.precioUnitario}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </Modal>
     </div>
   );
