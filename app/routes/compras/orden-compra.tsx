@@ -51,6 +51,18 @@ export default function OrdenCompraCompras() {
   const [detalleOpen, setDetalleOpen] = useState(false);
   const [detalle, setDetalle] = useState<OrdenCompra | null>(null);
   const [form] = Form.useForm();
+  const [search, setSearch] = useState("");
+
+  const filteredData = data.filter(orden => {
+    const searchLower = search.toLowerCase();
+    return (
+      orden.idOrden.toLowerCase().includes(searchLower) ||
+      orden.idProveedor.toLowerCase().includes(searchLower) ||
+      orden.nombreProveedor.toLowerCase().includes(searchLower) ||
+      orden.fecha.toLowerCase().includes(searchLower) ||
+      orden.materiasPrimas.some(mp => mp.nombre.toLowerCase().includes(searchLower))
+    );
+  });
 
   const handleAdd = () => {
     setEditing(null);
@@ -105,10 +117,20 @@ export default function OrdenCompraCompras() {
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ margin: 0 }}>Órdenes de Compra</h2>
+        <h2 style={{ margin: 0 }}>
+3rdenes de Compra</h2>
         <Button type="primary" onClick={handleAdd}>Agregar orden de compra</Button>
       </div>
-      <Table columns={columns} dataSource={data} pagination={{ pageSize: 6 }} bordered rowKey="key" />
+      <div style={{ marginBottom: 16 }}>
+        <Input.Search
+          placeholder="Buscar orden de compra..."
+          allowClear
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ width: 300 }}
+        />
+      </div>
+      <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 6 }} bordered rowKey="key" />
       <Modal
         open={modalOpen}
         title={editing ? "Editar orden de compra" : "Agregar orden de compra"}

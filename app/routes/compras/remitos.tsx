@@ -48,6 +48,18 @@ export default function RemitosCompras() {
   const [detalleOpen, setDetalleOpen] = useState(false);
   const [detalle, setDetalle] = useState<RemitoCompra | null>(null);
   const [form] = Form.useForm();
+  const [search, setSearch] = useState("");
+
+  const filteredData = data.filter(remito => {
+    const searchLower = search.toLowerCase();
+    return (
+      remito.idRemito.toLowerCase().includes(searchLower) ||
+      remito.idProveedor.toLowerCase().includes(searchLower) ||
+      remito.fecha.toLowerCase().includes(searchLower) ||
+      remito.nombreProveedor.toLowerCase().includes(searchLower) ||
+      remito.materiasPrimas.some(mp => mp.nombre.toLowerCase().includes(searchLower))
+    );
+  });
 
   const handleAdd = () => {
     setEditing(null);
@@ -103,7 +115,16 @@ export default function RemitosCompras() {
         <h2 style={{ margin: 0 }}>Remitos de compras</h2>
         <Button type="primary" onClick={handleAdd}>Agregar remito</Button>
       </div>
-      <Table columns={columns} dataSource={data} pagination={{ pageSize: 6 }} bordered rowKey="key" />
+      <div style={{ marginBottom: 16 }}>
+        <Input.Search
+          placeholder="Buscar remito..."
+          allowClear
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ width: 300 }}
+        />
+      </div>
+      <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 6 }} bordered rowKey="key" />
       <Modal
         open={modalOpen}
         title={editing ? "Editar remito" : "Agregar remito"}

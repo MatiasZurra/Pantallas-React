@@ -52,6 +52,18 @@ export default function PresupuestoCompras() {
   const [detalleOpen, setDetalleOpen] = useState(false);
   const [detalle, setDetalle] = useState<PresupuestoCompra | null>(null);
   const [form] = Form.useForm();
+  const [search, setSearch] = useState("");
+
+  const filteredData = data.filter(presupuesto => {
+    const searchLower = search.toLowerCase();
+    return (
+      presupuesto.idPresupuesto.toLowerCase().includes(searchLower) ||
+      presupuesto.idProveedor.toLowerCase().includes(searchLower) ||
+      presupuesto.nombreProveedor.toLowerCase().includes(searchLower) ||
+      presupuesto.fecha.toLowerCase().includes(searchLower) ||
+      presupuesto.materiasPrimas.some(mp => mp.nombre.toLowerCase().includes(searchLower))
+    );
+  });
 
   const handleAdd = () => {
     setEditing(null);
@@ -109,7 +121,16 @@ export default function PresupuestoCompras() {
         <h2 style={{ margin: 0 }}>Presupuestos de compras</h2>
         <Button type="primary" onClick={handleAdd}>Agregar presupuesto</Button>
       </div>
-      <Table columns={columns} dataSource={data} pagination={{ pageSize: 6 }} bordered rowKey="key" />
+      <div style={{ marginBottom: 16 }}>
+        <Input.Search
+          placeholder="Buscar presupuesto..."
+          allowClear
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ width: 300 }}
+        />
+      </div>
+      <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 6 }} bordered rowKey="key" />
       <Modal
         open={modalOpen}
         title={editing ? "Editar presupuesto" : "Agregar presupuesto"}

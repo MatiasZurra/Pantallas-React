@@ -63,6 +63,23 @@ export default function OrdenPedidoVentas() {
   const [detalleOpen, setDetalleOpen] = useState(false);
   const [detalle, setDetalle] = useState<OrdenPedido | null>(null);
   const [form] = Form.useForm();
+  const [search, setSearch] = useState("");
+
+  const filteredData = data.filter(pedido => {
+    const searchLower = search.toLowerCase();
+    return (
+      pedido.idPedido.toLowerCase().includes(searchLower) ||
+      pedido.idCliente.toLowerCase().includes(searchLower) ||
+      pedido.idEmpleado.toLowerCase().includes(searchLower) ||
+      pedido.fechaPedido.toLowerCase().includes(searchLower) ||
+      pedido.fechaEntrega.toLowerCase().includes(searchLower) ||
+      pedido.horaEntrega.toLowerCase().includes(searchLower) ||
+      (pedido.envio ? "sí" : "no").includes(searchLower) ||
+      pedido.cliente.toLowerCase().includes(searchLower) ||
+      pedido.empleado.toLowerCase().includes(searchLower) ||
+      pedido.productos.some(prod => prod.nombre.toLowerCase().includes(searchLower))
+    );
+  });
 
   const handleAdd = () => {
     setEditing(null);
@@ -119,10 +136,19 @@ export default function OrdenPedidoVentas() {
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ margin: 0 }}>Órdenes de Pedido</h2>
+        <h2 style={{ margin: 0 }}>rdenes de Pedido</h2>
         <Button type="primary" onClick={handleAdd}>Agregar orden de pedido</Button>
       </div>
-      <Table columns={columns} dataSource={data} pagination={{ pageSize: 6 }} bordered rowKey="key" />
+      <div style={{ marginBottom: 16 }}>
+        <Input.Search
+          placeholder="Buscar orden de pedido..."
+          allowClear
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ width: 300 }}
+        />
+      </div>
+      <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 6 }} bordered rowKey="key" />
       <Modal
         open={modalOpen}
         title={editing ? "Editar orden de pedido" : "Agregar orden de pedido"}

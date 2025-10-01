@@ -51,6 +51,19 @@ export default function PagosClienteVentas() {
   const [detalleOpen, setDetalleOpen] = useState(false);
   const [detalle, setDetalle] = useState<PagoCliente | null>(null);
   const [form] = Form.useForm();
+  const [search, setSearch] = useState("");
+
+  const filteredData = data.filter(pago => {
+    const searchLower = search.toLowerCase();
+    return (
+      pago.idPago.toLowerCase().includes(searchLower) ||
+      pago.idCliente.toLowerCase().includes(searchLower) ||
+      pago.fecha.toLowerCase().includes(searchLower) ||
+      pago.nombreCliente.toLowerCase().includes(searchLower) ||
+      String(pago.monto).includes(searchLower) ||
+      pago.productos.some(prod => prod.nombre.toLowerCase().includes(searchLower))
+    );
+  });
 
   const handleAdd = () => {
     setEditing(null);
@@ -106,7 +119,16 @@ export default function PagosClienteVentas() {
         <h2 style={{ margin: 0 }}>Pagos de cliente</h2>
         <Button type="primary" onClick={handleAdd}>Agregar pago</Button>
       </div>
-      <Table columns={columns} dataSource={data} pagination={{ pageSize: 6 }} bordered rowKey="key" />
+      <div style={{ marginBottom: 16 }}>
+        <Input.Search
+          placeholder="Buscar pago..."
+          allowClear
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ width: 300 }}
+        />
+      </div>
+      <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 6 }} bordered rowKey="key" />
       <Modal
         open={modalOpen}
         title={editing ? "Editar pago" : "Agregar pago"}

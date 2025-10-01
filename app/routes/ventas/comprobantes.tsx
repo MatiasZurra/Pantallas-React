@@ -40,6 +40,20 @@ export default function ComprobantesVentas() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Comprobante | null>(null);
   const [form] = Form.useForm();
+  const [search, setSearch] = useState("");
+
+  const filteredData = data.filter(comprobante => {
+    const searchLower = search.toLowerCase();
+    return (
+      comprobante.idComprobanteVenta.toLowerCase().includes(searchLower) ||
+      comprobante.idTipoComprobante.toLowerCase().includes(searchLower) ||
+      comprobante.idOrdenPedido.toLowerCase().includes(searchLower) ||
+      comprobante.idCliente.toLowerCase().includes(searchLower) ||
+      comprobante.fecha.toLowerCase().includes(searchLower) ||
+      comprobante.nombreCliente.toLowerCase().includes(searchLower) ||
+      String(comprobante.total).includes(searchLower)
+    );
+  });
 
   const handleAdd = () => {
     setEditing(null);
@@ -96,7 +110,16 @@ export default function ComprobantesVentas() {
         <h2 style={{ margin: 0 }}>Comprobantes</h2>
         <Button type="primary" onClick={handleAdd}>Agregar comprobante</Button>
       </div>
-      <Table columns={columns} dataSource={data} pagination={{ pageSize: 6 }} bordered rowKey="key" />
+      <div style={{ marginBottom: 16 }}>
+        <Input.Search
+          placeholder="Buscar comprobante..."
+          allowClear
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ width: 300 }}
+        />
+      </div>
+      <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 6 }} bordered rowKey="key" />
       <Modal
         open={modalOpen}
         title={editing ? "Editar comprobante" : "Agregar comprobante"}
