@@ -1,4 +1,5 @@
 
+
 import { useState } from "react";
 import { Layout, Menu, Card, Button, Table, Input, Space, Modal, Form } from "antd";
 import {
@@ -12,55 +13,30 @@ import {
   ApartmentOutlined,
 } from "@ant-design/icons";
 
-const { Sider, Content } = Layout;
-
-const maestros = [
-  { key: "clientes", label: "Clientes", icon: <UserOutlined /> },
-  { key: "proveedores", label: "Proveedores", icon: <TeamOutlined /> },
-  { key: "productos", label: "Productos", icon: <ShopOutlined /> },
-  { key: "materias", label: "Materias primas", icon: <AppstoreOutlined /> },
-  { key: "recetas", label: "Recetas", icon: <BookOutlined /> },
-  { key: "empleados", label: "Empleados", icon: <SolutionOutlined /> },
-  { key: "direcciones", label: "Direcciones", icon: <HomeOutlined /> },
-  { key: "unidades", label: "Unidades de medida", icon: <ApartmentOutlined /> },
-];
-
-type MaestroKey = keyof typeof dataEjemplo;
-type Cliente = { key: number; nombre: string; telefono: string; email: string; cuit_dni: string; direccion: string
-};
-type Proveedor = { key: number; nombre: string; telefono: string; email: string; cuit: string };
-type Producto = { key: number; nombre: string; categoria: string };
-type Materia = { key: number; nombre: string; stock: number };
 type Receta = { key: number; nombre: string };
 type Empleado = { key: number; nombre: string; puesto: string };
 type Direccion = { key: number; nombre: string; direccion: string };
 type Unidad = { key: number; nombre: string; simbolo: string };
 
 type MaestroData = {
-  clientes: Cliente[];
-  proveedores: Proveedor[];
-  productos: Producto[];
-  materias: Materia[];
   recetas: Receta[];
   empleados: Empleado[];
   direcciones: Direccion[];
   unidades: Unidad[];
 };
 
+type MaestroKey = keyof MaestroData;
+
+const { Sider, Content } = Layout;
+
+const maestros = [
+  { key: "recetas", label: "Recetas", icon: <BookOutlined /> },
+  { key: "empleados", label: "Empleados", icon: <SolutionOutlined /> },
+  { key: "direcciones", label: "Direcciones", icon: <HomeOutlined /> },
+  { key: "unidades", label: "Unidades de medida", icon: <ApartmentOutlined /> },
+];
+
 const dataEjemplo: MaestroData = {
-  clientes: [
-    { key: 1, nombre: "Juan Pérez", telefono: "123456789",cuit_dni:'36.674.908', email: "juan@mail.com", direccion: "Calle Falsa 123" },
-    { key: 2, nombre: "Ana López", telefono: "987654321", cuit_dni:'54.746.398',email: "ana@mail.com", direccion: "Av. Siempre Viva 456"},
-  ],
-  proveedores: [
-    { key: 1, nombre: "Molinos SA", telefono: "111222333", email: "ventas@molinos.com", cuit:"33-13453765-2" },
-  ],
-  productos: [
-    { key: 1, nombre: "Ravioles", categoria: "Pasta rellena" },
-  ],
-  materias: [
-    { key: 1, nombre: "Harina 000", stock: 120 },
-  ],
   recetas: [
     { key: 1, nombre: "Salsa fileto" },
   ],
@@ -84,30 +60,6 @@ type ColumnType<T = any> = {
 };
 
 const columnas: { [K in MaestroKey]: ColumnType[] } = {
-  clientes: [
-    { title: "Nombre", dataIndex: "nombre" },
-    { title: "Teléfono", dataIndex: "telefono" },
-    { title: "Email", dataIndex: "email" },
-    { title: "CUIT/DNI", dataIndex: "cuit_dni" },
-    { title: "Dirección", dataIndex: "direccion" },
-  { title: "Acciones", key: "acciones", render: function(_: unknown, record: any, i: number): React.ReactNode { return <AccionesTabla record={record} maestro="clientes" /> } },
-  ],
-  proveedores: [
-    { title: "Nombre", dataIndex: "nombre" },
-    { title: "Teléfono", dataIndex: "telefono" },
-    { title: "Email", dataIndex: "email" },
-  { title: "Acciones", key: "acciones", render: function(_: unknown, record: any, i: number): React.ReactNode { return <AccionesTabla record={record} maestro="proveedores" /> } },
-  ],
-  productos: [
-    { title: "Nombre", dataIndex: "nombre" },
-    { title: "Categoría", dataIndex: "categoria" },
-  { title: "Acciones", key: "acciones", render: function(_: unknown, record: any, i: number): React.ReactNode { return <AccionesTabla record={record} maestro="productos" /> } },
-  ],
-  materias: [
-    { title: "Nombre", dataIndex: "nombre" },
-    { title: "Stock", dataIndex: "stock" },
-  { title: "Acciones", key: "acciones", render: function(_: unknown, record: any, i: number): React.ReactNode { return <AccionesTabla record={record} maestro="materias" /> } },
-  ],
   recetas: [
     { title: "Nombre", dataIndex: "nombre" },
   { title: "Acciones", key: "acciones", render: function(_: unknown, record: any, i: number): React.ReactNode { return <AccionesTabla record={record} maestro="recetas" /> } },
@@ -139,7 +91,7 @@ function AccionesTabla({ record, maestro }: { record: unknown; maestro: MaestroK
 }
 
 export default function Maestros() {
-  const [maestro, setMaestro] = useState<MaestroKey>("clientes");
+  const [maestro, setMaestro] = useState<MaestroKey>("recetas");
   const [busqueda, setBusqueda] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [form] = Form.useForm();
@@ -193,44 +145,8 @@ export default function Maestros() {
           onOk={() => setModalOpen(false)}
         >
           <Form form={form} layout="vertical">
-            {maestro === "proveedores" && (
-              <>
-              <Form.Item label="Razon Social" name="RazonSocial" required>
-                  <Input />
-                </Form.Item>
-                <Form.Item label="CUIT" name="cuit" required>
-                  <Input />
-                </Form.Item>
-                <Form.Item label="Teléfono" name="telefono" required>
-                  <Input />
-                </Form.Item>
-                <Form.Item label="Email" name="email" required>
-                  <Input type="email" />
-                </Form.Item>
-                <Form.Item label="Dirección" name="direccion" required>
-                  <Input />
-                </Form.Item>
-              </>
-            )}
-            {maestro === "clientes" && (
-              <>
-                <Form.Item label="Razon Social" name="RazonSocial" required>
-                  <Input />
-                </Form.Item>
-                 <Form.Item label="DNI/CUIT" name="dni_cuit" required>
-                  <Input />
-                </Form.Item>
-                <Form.Item label="Teléfono" name="telefono" required>
-                  <Input />
-                </Form.Item>
-                <Form.Item label="Email" name="email" required>
-                  <Input type="email" />
-                </Form.Item>
-                <Form.Item label="Dirección" name="direccion" required>
-                  <Input />
-                </Form.Item>
-              </>
-            )}
+
+
             {maestro === "empleados" && (
               <>
                 <Form.Item label="Nombre" name="nombre" required>

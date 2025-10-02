@@ -8,6 +8,7 @@ const acciones = [
   { label: "Comprobantes", path: "/comprobantes-ventas" },
   { label: "Remitos", path: "/remitos-clientes" },
   { label: "Pagos clientes", path: "/pagos-clientes" },
+  {label: "Clientes", path: "/ventas/clientes"},
 ];
 
 export default function Ventas() {

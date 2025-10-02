@@ -37,6 +37,10 @@ const menuItems = [
         label: "Remitos",
       },
       {
+        key: "ventas/clientes",
+        label:"Clientes",
+      },
+      {
         key: "ventas/pagos-cliente",
         label: "Pagos de cliente",
       },
@@ -64,6 +68,10 @@ const menuItems = [
         label: "Remitos",
       },
       {
+        key: "compras/proveedores",
+        label: "Proveedores",
+      },
+      {
         key: "compras/pagos-proveedor",
         label: "Pagos a proveedor",
       },
@@ -83,6 +91,16 @@ const menuItems = [
     key: "stock",
     icon: <ShopOutlined style={{ color: '#722ed1' }} />,
     label: "Stock",
+    children: [
+      {
+        key: "stock/materia-prima",
+        label: "Materia Prima",
+      },
+      {
+        key: "stock/productos",
+        label: "Productos",
+      },
+    ],
   },
   {
     key: "reportes",
