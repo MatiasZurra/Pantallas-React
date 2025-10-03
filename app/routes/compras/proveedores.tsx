@@ -8,6 +8,7 @@ const datosEjemplo: Proveedor[] = [
   { key: 2, nombre: "Materias Primas SA", telefono: "2233445566", cuit: '30-87654321-0', email: "mp@proveedor.com", direccion: "Ruta 8 Km 45" },
 ];
 
+
 export default function ProveedoresCompras() {
   const [data, setData] = useState<Proveedor[]>(datosEjemplo);
   const [busqueda, setBusqueda] = useState("");
@@ -38,69 +39,62 @@ export default function ProveedoresCompras() {
   function handleOk() {
     form.validateFields().then((values: Omit<Proveedor, "key">) => {
       if (editing) {
-        setData(data.map(item => (item.key === editing.key ? { ...editing, ...values } : item)));
+        setData(data.map(item => item.key === editing.key ? { ...editing, ...values } : item));
       } else {
         setData([...data, { ...values, key: Date.now() }]);
       }
       setModalOpen(false);
+      setEditing(null);
+      form.resetFields();
     });
   }
 
+  const columns = [
+    { title: "Nombre", dataIndex: "nombre" },
+    { title: "Teléfono", dataIndex: "telefono" },
+    { title: "Email", dataIndex: "email" },
+    { title: "CUIT", dataIndex: "cuit" },
+    { title: "Dirección", dataIndex: "direccion" },
+    {
+      title: "Acciones",
+      key: "acciones",
+      render: (_: any, record: Proveedor) => (
+        <Space>
+          <Button size="small" onClick={() => handleEdit(record)}>Editar</Button>
+          <Button size="small" danger onClick={() => handleDelete(record.key)}>Eliminar</Button>
+        </Space>
+      ),
+    },
+  ];
+
   return (
-    <div>
-      <Space style={{ marginBottom: 16 }}>
+    <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <h2 style={{ margin: 0 }}>Proveedores</h2>
+        <Button type="primary" onClick={handleAdd}>Agregar proveedor</Button>
+      </div>
+      <div style={{ marginBottom: 16 }}>
         <Input.Search
-          placeholder="Buscar proveedores"
+          placeholder="Buscar proveedor..."
+          allowClear
           value={busqueda}
           onChange={e => setBusqueda(e.target.value)}
-          allowClear
+          style={{ width: 300 }}
         />
-        <Button type="primary" onClick={handleAdd}>Nuevo Proveedor</Button>
-      </Space>
-      <Table
-        columns={[
-          { title: "Nombre", dataIndex: "nombre" },
-          { title: "Teléfono", dataIndex: "telefono" },
-          { title: "CUIT", dataIndex: "cuit" },
-          { title: "Email", dataIndex: "email" },
-          { title: "Dirección", dataIndex: "direccion" },
-          {
-            title: "Acciones",
-            render: (_, record) => (
-              <Space>
-                <Button onClick={() => handleEdit(record)}>Editar</Button>
-                <Button danger onClick={() => handleDelete(record.key)}>Eliminar</Button>
-              </Space>
-            )
-          }
-        ]}
-        dataSource={filteredData}
-        pagination={{ pageSize: 8 }}
-      />
+      </div>
+      <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 6 }} bordered rowKey="key" />
       <Modal
         open={modalOpen}
-        title={editing ? "Editar Proveedor" : "Nuevo Proveedor"}
-        onCancel={() => setModalOpen(false)}
+        title={editing ? "Editar proveedor" : "Agregar proveedor"}
+        onCancel={() => { setModalOpen(false); setEditing(null); form.resetFields(); }}
         onOk={handleOk}
-        okText="Guardar"
-        cancelText="Cancelar"
       >
         <Form form={form} layout="vertical">
-          <Form.Item name="nombre" label="Nombre" rules={[{ required: true, message: "Ingrese el nombre" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="telefono" label="Teléfono" rules={[{ required: true, message: "Ingrese el teléfono" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="cuit" label="CUIT" rules={[{ required: true, message: "Ingrese el CUIT" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="email" label="Email" rules={[{ required: true, message: "Ingrese el email" }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="direccion" label="Dirección" rules={[{ required: true, message: "Ingrese la dirección" }]}>
-            <Input />
-          </Form.Item>
+          <Form.Item label="Nombre" name="nombre" rules={[{ required: true, message: "Ingrese el nombre" }]}> <Input /> </Form.Item>
+          <Form.Item label="Teléfono" name="telefono" rules={[{ required: true, message: "Ingrese el teléfono" }]}> <Input /> </Form.Item>
+          <Form.Item label="Email" name="email" rules={[{ required: true, message: "Ingrese el email" }]}> <Input /> </Form.Item>
+          <Form.Item label="CUIT" name="cuit" rules={[{ required: true, message: "Ingrese el CUIT" }]}> <Input /> </Form.Item>
+          <Form.Item label="Dirección" name="direccion" rules={[{ required: true, message: "Ingrese la dirección" }]}> <Input /> </Form.Item>
         </Form>
       </Modal>
     </div>

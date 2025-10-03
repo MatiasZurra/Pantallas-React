@@ -56,6 +56,7 @@ const datosEjemplo: OrdenPedido[] = [
   },
 ];
 
+
 export default function OrdenPedidoVentas() {
   const [data, setData] = useState<OrdenPedido[]>(datosEjemplo);
   const [modalOpen, setModalOpen] = useState(false);
@@ -102,7 +103,7 @@ export default function OrdenPedidoVentas() {
       if (editing) {
         setData(data.map(item => item.key === editing.key ? { ...editing, ...values } : item));
       } else {
-        setData([...data, { ...values, key: Date.now() }]);
+        setData([...data, { ...values, key: Date.now(), productos: [] }]);
       }
       setModalOpen(false);
       setEditing(null);
@@ -112,14 +113,12 @@ export default function OrdenPedidoVentas() {
 
   const columns = [
     { title: "ID Pedido", dataIndex: "idPedido" },
-    { title: "ID Cliente", dataIndex: "idCliente" },
-    { title: "ID Empleado", dataIndex: "idEmpleado" },
-    { title: "Fecha de pedido", dataIndex: "fechaPedido" },
-    { title: "Fecha de entrega", dataIndex: "fechaEntrega" },
-    { title: "Hora de entrega", dataIndex: "horaEntrega" },
-    { title: "Envío", dataIndex: "envio", render: (envio: boolean) => envio ? "Sí" : "No" },
     { title: "Cliente", dataIndex: "cliente" },
     { title: "Empleado", dataIndex: "empleado" },
+    { title: "Fecha Pedido", dataIndex: "fechaPedido" },
+    { title: "Fecha Entrega", dataIndex: "fechaEntrega" },
+    { title: "Hora Entrega", dataIndex: "horaEntrega" },
+    { title: "Envío", dataIndex: "envio", render: (v: boolean) => v ? "Sí" : "No" },
     {
       title: "Acciones",
       key: "acciones",
@@ -134,10 +133,10 @@ export default function OrdenPedidoVentas() {
   ];
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
+    <div style={{ maxWidth: 1100, margin: "0 auto", padding: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ margin: 0 }}>rdenes de Pedido</h2>
-        <Button type="primary" onClick={handleAdd}>Agregar orden de pedido</Button>
+        <h2 style={{ margin: 0 }}>Órdenes de Pedido</h2>
+        <Button type="primary" onClick={handleAdd}>Nueva Orden de Pedido</Button>
       </div>
       <div style={{ marginBottom: 16 }}>
         <Input.Search
@@ -148,64 +147,57 @@ export default function OrdenPedidoVentas() {
           style={{ width: 300 }}
         />
       </div>
-      <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 6 }} bordered rowKey="key" />
+      <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 8 }} rowKey="key" bordered />
       <Modal
         open={modalOpen}
-        title={editing ? "Editar orden de pedido" : "Agregar orden de pedido"}
+        title={editing ? "Editar Orden de Pedido" : "Nueva Orden de Pedido"}
         onCancel={() => { setModalOpen(false); setEditing(null); form.resetFields(); }}
         onOk={handleOk}
       >
         <Form form={form} layout="vertical">
           <Form.Item label="ID Pedido" name="idPedido" rules={[{ required: true, message: "Ingrese el ID de pedido" }]}> <Input /> </Form.Item>
-          <Form.Item label="ID Cliente" name="idCliente" rules={[{ required: true, message: "Ingrese el ID de cliente" }]}> <Input /> </Form.Item>
-          <Form.Item label="ID Empleado" name="idEmpleado" rules={[{ required: true, message: "Ingrese el ID de empleado" }]}> <Input /> </Form.Item>
-          <Form.Item label="Fecha de pedido" name="fechaPedido" rules={[{ required: true, message: "Ingrese la fecha de pedido" }]}> <Input type="date" /> </Form.Item>
-          <Form.Item label="Fecha de entrega" name="fechaEntrega" rules={[{ required: true, message: "Ingrese la fecha de entrega" }]}> <Input type="date" /> </Form.Item>
-          <Form.Item label="Hora de entrega" name="horaEntrega" rules={[{ required: true, message: "Ingrese la hora de entrega" }]}> <Input type="time" /> </Form.Item>
-          <Form.Item label="Envío" name="envio" rules={[{ required: true, message: "Seleccione si hay envío" }]}> <Input type="checkbox" /> </Form.Item>
-          <Form.Item label="Cliente (Nombre)" name="cliente" rules={[{ required: true, message: "Ingrese el nombre del cliente" }]}> <Input /> </Form.Item>
-          <Form.Item label="Empleado (Nombre)" name="empleado" rules={[{ required: true, message: "Ingrese el nombre del empleado" }]}> <Input /> </Form.Item>
+          <Form.Item label="Cliente" name="cliente" rules={[{ required: true, message: "Ingrese el cliente" }]}> <Input /> </Form.Item>
+          <Form.Item label="Empleado" name="empleado" rules={[{ required: true, message: "Ingrese el empleado" }]}> <Input /> </Form.Item>
+          <Form.Item label="Fecha Pedido" name="fechaPedido" rules={[{ required: true, message: "Ingrese la fecha de pedido" }]}> <Input type="date" /> </Form.Item>
+          <Form.Item label="Fecha Entrega" name="fechaEntrega" rules={[{ required: true, message: "Ingrese la fecha de entrega" }]}> <Input type="date" /> </Form.Item>
+          <Form.Item label="Hora Entrega" name="horaEntrega" rules={[{ required: true, message: "Ingrese la hora de entrega" }]}> <Input type="time" /> </Form.Item>
+          <Form.Item label="Envío" name="envio" valuePropName="checked">
+            <Input type="checkbox" />
+          </Form.Item>
         </Form>
       </Modal>
       <Modal
         open={detalleOpen}
-        title="Detalle de orden de pedido"
-        onCancel={() => { setDetalleOpen(false); setDetalle(null); }}
+        title="Detalle de Orden de Pedido"
+        onCancel={() => setDetalleOpen(false)}
         footer={null}
       >
         {detalle && (
-          <div>
+          <>
             <p><b>ID Pedido:</b> {detalle.idPedido}</p>
-            <p><b>ID Cliente:</b> {detalle.idCliente}</p>
-            <p><b>ID Empleado:</b> {detalle.idEmpleado}</p>
-            <p><b>Fecha de pedido:</b> {detalle.fechaPedido}</p>
-            <p><b>Fecha de entrega:</b> {detalle.fechaEntrega}</p>
-            <p><b>Hora de entrega:</b> {detalle.horaEntrega}</p>
-            <p><b>Envío:</b> {detalle.envio ? 'Sí' : 'No'}</p>
             <p><b>Cliente:</b> {detalle.cliente}</p>
             <p><b>Empleado:</b> {detalle.empleado}</p>
+            <p><b>Fecha Pedido:</b> {detalle.fechaPedido}</p>
+            <p><b>Fecha Entrega:</b> {detalle.fechaEntrega}</p>
+            <p><b>Hora Entrega:</b> {detalle.horaEntrega}</p>
+            <p><b>Envío:</b> {detalle.envio ? "Sí" : "No"}</p>
             <b>Productos:</b>
-            <table style={{ width: '100%', marginTop: 8, borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Producto</th>
-                  <th style={{ borderBottom: '1px solid #ccc', textAlign: 'right' }}>Cantidad</th>
-                  <th style={{ borderBottom: '1px solid #ccc', textAlign: 'right' }}>Precio unitario</th>
-                </tr>
-              </thead>
-              <tbody>
-                {detalle.productos.map((prod, idx) => (
-                  <tr key={idx}>
-                    <td>{prod.nombre}</td>
-                    <td style={{ textAlign: 'right' }}>{prod.cantidad}</td>
-                    <td style={{ textAlign: 'right' }}>${prod.precioUnitario}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+            <Table
+              columns={[
+                { title: "Nombre", dataIndex: "nombre" },
+                { title: "Cantidad", dataIndex: "cantidad" },
+                { title: "Precio Unitario", dataIndex: "precioUnitario" },
+              ]}
+              dataSource={detalle.productos}
+              pagination={false}
+              size="small"
+              rowKey="nombre"
+              style={{ marginTop: 8 }}
+            />
+          </>
         )}
       </Modal>
     </div>
   );
 }
+
