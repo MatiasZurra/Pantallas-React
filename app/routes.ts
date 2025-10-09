@@ -14,7 +14,6 @@ export default [
 				   route("clientes", "./routes/ventas/clientes.tsx"),
 			]),
 			route("/compras", "./routes/compras.tsx", [
-				route("presupuesto", "./routes/compras/presupuesto.tsx"),
 				route("orden-compra", "./routes/compras/orden-compra.tsx"),
 				route("comprobantes", "./routes/compras/comprobantes.tsx"),
 				route("remitos", "./routes/compras/remitos.tsx"),
