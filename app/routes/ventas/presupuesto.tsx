@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, Space } from "antd";
+import { Table, Button, Modal, Form, Input, Space, Typography } from "antd";
 
+const { Title } = Typography;
 type ProductoPresupuesto = {
   nombre: string;
   cantidad: number;
@@ -117,7 +118,7 @@ export default function PresupuestoVentas() {
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ margin: 0 }}>Presupuestos</h2>
+        <Title level={2}>Presupuestos de Ventas</Title>
         <Button type="primary" onClick={handleAdd}>Agregar presupuesto</Button>
       </div>
       <div style={{ marginBottom: 16 }}>
