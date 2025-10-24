@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, Space } from "antd";
+import { Table, Button, Modal, Form, Input, Space, Typography } from "antd";
+
+const { Title } = Typography;
 
 type ProductoRemito = {
   nombre: string;
@@ -115,10 +117,9 @@ export default function RemitosVentas() {
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ margin: 0 }}>Remitos</h2>
-        <Button type="primary" onClick={handleAdd}>Agregar remito</Button>
+        <Title level={2}>Remitos de Ventas</Title>
       </div>
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Input.Search
           placeholder="Buscar remito..."
           allowClear
@@ -126,6 +127,7 @@ export default function RemitosVentas() {
           onChange={e => setSearch(e.target.value)}
           style={{ width: 300 }}
         />
+        <Button type="primary" onClick={handleAdd}>Agregar remito</Button>
       </div>
       <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 6 }} bordered rowKey="key" />
       <Modal

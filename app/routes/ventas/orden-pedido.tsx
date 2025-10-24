@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, Space } from "antd";
+import { Table, Button, Modal, Form, Input, Space, Typography } from "antd";
+
+const { Title } = Typography;
 
 type ProductoPedido = {
   nombre: string;
@@ -135,10 +137,9 @@ export default function OrdenPedidoVentas() {
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ margin: 0 }}>Órdenes de Pedido</h2>
-        <Button type="primary" onClick={handleAdd}>Nueva Orden de Pedido</Button>
+        <Title level={2}>Órdenes de Pedido</Title>
       </div>
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Input.Search
           placeholder="Buscar orden de pedido..."
           allowClear
@@ -146,6 +147,7 @@ export default function OrdenPedidoVentas() {
           onChange={e => setSearch(e.target.value)}
           style={{ width: 300 }}
         />
+        <Button type="primary" onClick={handleAdd}>Agregar Orden de Pedido</Button>
       </div>
       <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 8 }} rowKey="key" bordered />
       <Modal

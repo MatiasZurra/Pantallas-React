@@ -1,7 +1,8 @@
 
 import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, Space } from "antd";
+import { Table, Button, Modal, Form, Input, Space, Typography } from "antd";
 
+const { Title } = Typography;
 type MateriaPrimaPago = {
   nombre: string;
   cantidad: number;
@@ -118,10 +119,9 @@ export default function PagosProveedorCompras() {
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ margin: 0 }}>Pagos a proveedor</h2>
-        <Button type="primary" onClick={handleAdd}>Agregar pago</Button>
+        <Title level={2}>Pagos a Proveedores</Title>
       </div>
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Input.Search
           placeholder="Buscar pago..."
           allowClear
@@ -129,6 +129,7 @@ export default function PagosProveedorCompras() {
           onChange={e => setSearch(e.target.value)}
           style={{ width: 300 }}
         />
+        <Button type="primary" onClick={handleAdd}>Agregar pago</Button>
       </div>
       <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 6 }} bordered rowKey="key" />
       <Modal

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { Table, Button, Input, Space, Modal, Form } from "antd";
+import { Table, Button, Input, Space, Modal, Form, Typography } from "antd";
 
+
+const {Title}= Typography;
 type Producto = { key: number; nombre: string; categoria: string };
 
 const datosEjemplo: Producto[] = [
@@ -83,14 +85,12 @@ export default function StockProductos() {
           marginBottom: 16,
         }}
       >
-        <h2 style={{ margin: 0 }}>Stock de Productos</h2>
-        <Button type="primary" onClick={handleAdd}>
-          Nuevo Producto
-        </Button>
+        <Title level={2}>Stock de Productos</Title>
+       
       </div>
 
       {/* Barra de búsqueda */}
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between'}}>
         <Input.Search
           placeholder="Buscar producto..."
           allowClear
@@ -98,6 +98,9 @@ export default function StockProductos() {
           onChange={e => setBusqueda(e.target.value)}
           style={{ width: 300 }}
         />
+        <Button type="primary" onClick={handleAdd}>
+          Agrgar Producto
+        </Button>
       </div>
 
       {/* Tabla */}

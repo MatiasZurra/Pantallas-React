@@ -101,12 +101,12 @@ export default function Maestros() {
   );
 
   return (
-    <Layout style={{ minHeight: "80vh", background: "#f4f6fa" }}>
+    <Layout style={{ minHeight: "100vh", background: "#f4f6fa" }}>
       <Sider width={220} style={{ background: "#fff", borderRadius: 12, margin: 16, boxShadow: "0 2px 8px #e6e6e6" }}>
         <Menu
           mode="inline"
           selectedKeys={[maestro]}
-          style={{ height: "100%", borderRight: 0, fontWeight: 500 }}
+          style={{ height: "100%", borderRight: 0, fontWeight: 500, borderRadius: 12 }}
           items={maestros.map((m) => ({ ...m, label: <span style={{ fontSize: 16 }}>{m.label}</span> }))}
           onClick={({ key }) => setMaestro(key as MaestroKey)}
         />

@@ -1,6 +1,8 @@
 
 import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, Space } from "antd";
+import { Table, Button, Modal, Form, Input, Space, Typography } from "antd";
+
+const { Title } = Typography;
 
 type MateriaPrimaPresupuesto = {
   nombre: string;
@@ -118,10 +120,9 @@ export default function PresupuestoCompras() {
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ margin: 0 }}>Presupuestos de compras</h2>
-        <Button type="primary" onClick={handleAdd}>Agregar presupuesto</Button>
+        <Title level={2}>Presupuestos de Compras</Title>
       </div>
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Input.Search
           placeholder="Buscar presupuesto..."
           allowClear
@@ -129,6 +130,7 @@ export default function PresupuestoCompras() {
           onChange={e => setSearch(e.target.value)}
           style={{ width: 300 }}
         />
+        <Button type="primary" onClick={handleAdd}>Agregar presupuesto</Button>
       </div>
       <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 6 }} bordered rowKey="key" />
       <Modal

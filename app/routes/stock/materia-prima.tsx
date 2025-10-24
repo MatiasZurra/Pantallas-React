@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Table, Button, Input, Space, Modal, Form } from "antd";
+import { Table, Button, Input, Space, Modal, Form, Typography } from "antd";
 
 type Materia = { key: number; nombre: string; stock: number };
-
+const {Title}= Typography;
 const datosEjemplo: Materia[] = [
   { key: 1, nombre: "Harina 000", stock: 120 },
   { key: 2, nombre: "Huevo", stock: 80 },
@@ -83,14 +83,11 @@ export default function StockMateriaPrima() {
           marginBottom: 16,
         }}
       >
-        <h2 style={{ margin: 0 }}>Stock de Materia Prima</h2>
-        <Button type="primary" onClick={handleAdd}>
-          Agregar Materia Prima
-        </Button>
+        <Title level={2}>Stock de Materia Prima</Title>
       </div>
 
       {/* Barra de búsqueda */}
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
         <Input.Search
           placeholder="Buscar materia prima..."
           allowClear
@@ -98,6 +95,9 @@ export default function StockMateriaPrima() {
           onChange={e => setBusqueda(e.target.value)}
           style={{ width: 300 }}
         />
+        <Button type="primary" onClick={handleAdd}>
+          Agregar Materia Prima
+        </Button>
       </div>
 
       {/* Tabla */}

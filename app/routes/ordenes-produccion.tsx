@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, Space } from "antd";
-
+import { Table, Button, Modal, Form, Input, Space, Typography } from "antd";
+const { Title } = Typography;
 type ProductoElaborado = {
   nombre: string;
   cantidad: number;
@@ -123,10 +123,10 @@ export default function OrdenesProduccion() {
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <h2 style={{ margin: 0 }}>Órdenes de Producción</h2>
-        <Button type="primary" onClick={handleAdd}>Agregar orden</Button>
+        <Title level={2}>Órdenes de Producción</Title>
+        
       </div>
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between'}}>
         <Input.Search
           placeholder="Buscar orden..."
           allowClear
@@ -134,6 +134,7 @@ export default function OrdenesProduccion() {
           onChange={e => setSearch(e.target.value)}
           style={{ width: 300 }}
         />
+        <Button type="primary" onClick={handleAdd}>Agregar orden</Button>
       </div>
       <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 6 }} bordered rowKey="key" />
       <Modal
