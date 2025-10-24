@@ -52,10 +52,6 @@ const menuItems = [
     label: "Compras",
     children: [
       {
-        key: "compras/presupuesto",
-        label: "Presupuesto",
-      },
-      {
         key: "compras/orden-compra",
         label: "Orden de compra",
       },
