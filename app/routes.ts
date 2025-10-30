@@ -21,7 +21,10 @@ export default [
 				   route("pagos-proveedor", "./routes/compras/pagos-proveedor.tsx"),
 				   route("proveedores", "./routes/compras/proveedores.tsx"),
 			]),
-		route("/produccion", "./routes/produccion.tsx"),
+		route("/produccion", "./routes/produccion.tsx", [
+			route("ordenes-produccion", "./routes/ordenes-produccion.tsx"),
+			route("recetas", "./routes/maestros/recetas.tsx"),
+		]),
 		route("/mantenimiento", "./routes/mantenimiento.tsx"),
 		route("/stock", "./routes/stock.tsx", [
 			route("materia-prima", "./routes/stock/materia-prima.tsx"),
@@ -29,7 +32,6 @@ export default [
 		]),
 		route("/reportes", "./routes/reportes.tsx"),
 		route("/maestros", "./routes/maestros.tsx", [
-			route("recetas", "./routes/maestros/recetas.tsx"),
 			route("empleados", "./routes/maestros/empleados.tsx"),
 			route("unidades", "./routes/maestros/unidades.tsx"),
 		]),

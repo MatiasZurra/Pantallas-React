@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, Space } from "antd";
+import { Table, Button, Modal, Form, Input, Space, Typography } from "antd";
 
 interface UnidadMedida {
   key: number;
@@ -98,8 +98,11 @@ export default function UnidadesMaestros() {
     },
   ];
 
+  const { Title } = Typography;
+
   return (
     <div style={{ padding: 24 }}>
+      <Title level={2} style={{ marginBottom: 16 }}>Unidades de medida</Title>
       <div style={{ marginBottom: 16, display: "flex", gap: 16 }}>
         <Input.Search
           placeholder="Buscar unidad de medida..."

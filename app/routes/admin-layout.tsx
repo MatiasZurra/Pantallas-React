@@ -81,6 +81,16 @@ const menuItems = [
     key: "produccion",
     icon: <ShopOutlined style={{ color: '#faad14' }} />,
     label: "Producción",
+    children: [
+      {
+        key: "produccion/ordenes-produccion",
+        label: "Órdenes de producción",
+      },
+      {
+        key: "produccion/recetas",
+        label: "Recetas",
+      },
+    ],
   },
   {
     key: "mantenimiento",
@@ -103,19 +113,11 @@ const menuItems = [
     ],
   },
   {
-    key: "reportes",
-    icon: <BarChartOutlined />,
-    label: "Reportes",
-  },
-  {
     key: "maestros",
     icon: <UserOutlined style={{ color: '#52c41a' }} />,
     label: "Maestros",
     children: [
-      {
-        key: "maestros/recetas",
-        label: "Recetas",
-      },
+     
       {
         key: "maestros/empleados",
         label: "Empleados",
