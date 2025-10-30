@@ -111,6 +111,24 @@ const menuItems = [
     key: "maestros",
     icon: <UserOutlined style={{ color: '#52c41a' }} />,
     label: "Maestros",
+    children: [
+      {
+        key: "maestros/recetas",
+        label: "Recetas",
+      },
+      {
+        key: "maestros/empleados",
+        label: "Empleados",
+      },
+      {
+        key: "maestros/direcciones",
+        label: "Direcciones",
+      },
+      {
+        key: "maestros/unidades",
+        label: "Unidades",
+      },
+    ],
   },
 ];
 

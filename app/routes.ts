@@ -28,6 +28,11 @@ export default [
 			route("productos", "./routes/stock/productos.tsx"),
 		]),
 		route("/reportes", "./routes/reportes.tsx"),
-		route("/maestros", "./routes/maestros.tsx"),
+		route("/maestros", "./routes/maestros.tsx", [
+			route("recetas", "./routes/maestros/recetas.tsx"),
+			route("empleados", "./routes/maestros/empleados.tsx"),
+			route("direcciones", "./routes/maestros/direcciones.tsx"),
+			route("unidades", "./routes/maestros/unidades.tsx"),
+		]),
 	]),
 ] satisfies RouteConfig;
