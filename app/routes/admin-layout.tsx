@@ -51,10 +51,7 @@ const menuItems = [
     icon: <ShopOutlined style={{ color: '#13c2c2' }} />,
     label: "Compras",
     children: [
-      {
-        key: "compras/presupuesto",
-        label: "Presupuesto",
-      },
+
       {
         key: "compras/orden-compra",
         label: "Orden de compra",

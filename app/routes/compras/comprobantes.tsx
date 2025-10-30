@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, Space, Typography } from "antd";
+import React, { useState, useEffect } from "react";
+import { Table, Button, Modal, Form, Input, Space, Typography, InputNumber, message } from "antd";
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -54,6 +55,8 @@ export default function ComprobantesCompras() {
   const [detalle, setDetalle] = useState<ComprobanteCompra | null>(null);
   const [form] = Form.useForm();
   const [search, setSearch] = useState("");
+  const [materiasItems, setMateriasItems] = useState<MateriaPrima[]>([]);
+  const [total, setTotal] = useState(0);
 
   const filteredData = data.filter(comprobante => {
     const searchLower = search.toLowerCase();
@@ -66,15 +69,24 @@ export default function ComprobantesCompras() {
     );
   });
 
+  useEffect(() => {
+    const newTotal = materiasItems.reduce((acc, m) => acc + (m.cantidad * m.precioUnitario), 0);
+    setTotal(newTotal);
+  }, [materiasItems]);
+
   const handleAdd = () => {
     setEditing(null);
     form.resetFields();
+    setMateriasItems([]);
+    setTotal(0);
     setModalOpen(true);
   };
 
   const handleEdit = (record: ComprobanteCompra) => {
     setEditing(record);
     form.setFieldsValue(record);
+    setMateriasItems(record.materiasPrimas);
+    setTotal(record.total);
     setModalOpen(true);
   };
 
@@ -83,16 +95,23 @@ export default function ComprobantesCompras() {
   };
 
   const handleOk = () => {
-    form.validateFields().then((values: Omit<ComprobanteCompra, "key" | "materiasPrimas" | "total">) => {
-      const materiasPrimas = editing ? editing.materiasPrimas : [];
-      const total = materiasPrimas.reduce((acc, mat) => acc + mat.cantidad * mat.precioUnitario, 0);
-      if (editing) {
-        setData(data.map(item => item.key === editing.key ? { ...editing, ...values, materiasPrimas, total } : item));
-      } else {
-        setData([...data, { ...values, materiasPrimas, total, key: Date.now() }]);
+    form.validateFields().then((values: Omit<ComprobanteCompra, "key" | "idComprobante" | "materiasPrimas" | "total">) => {
+      if (materiasItems.length === 0) {
+        message.error("Debe agregar al menos una materia prima al comprobante");
+        return;
       }
+
+      if (editing) {
+        setData(data.map(item => item.key === editing.key ? { ...editing, ...values, materiasPrimas: materiasItems, total } : item));
+      } else {
+        const newId = `CC-${String(data.length + 1).padStart(3, '0')}`;
+        setData([...data, { ...values, materiasPrimas: materiasItems, total, idComprobante: newId, key: Date.now() }]);
+      }
+
       setModalOpen(false);
       setEditing(null);
+      setMateriasItems([]);
+      setTotal(0);
       form.resetFields();
     });
   };
@@ -139,12 +158,105 @@ export default function ComprobantesCompras() {
         onOk={handleOk}
       >
         <Form form={form} layout="vertical">
-          <Form.Item label="ID Comprobante" name="idComprobante" rules={[{ required: true, message: "Ingrese el ID de comprobante" }]}> <Input /> </Form.Item>
+          {editing && (
+            <div style={{ marginBottom: 16 }}>
+              <Typography.Text strong>ID Comprobante: </Typography.Text>
+              <Typography.Text>{editing.idComprobante}</Typography.Text>
+            </div>
+          )}
           <Form.Item label="ID Proveedor" name="idProveedor" rules={[{ required: true, message: "Ingrese el ID de proveedor" }]}> <Input /> </Form.Item>
           <Form.Item label="Proveedor" name="nombreProveedor" rules={[{ required: true, message: "Ingrese el nombre del proveedor" }]}> <Input /> </Form.Item>
           <Form.Item label="Fecha" name="fecha" rules={[{ required: true, message: "Ingrese la fecha" }]}> <Input type="date" /> </Form.Item>
-          <Form.Item label="Total" name="total" rules={[{ required: true, message: "Ingrese el total" }]}> <Input type="number" /> </Form.Item>
+          <div style={{ marginBottom: 12 }}>
+            <Typography.Text strong>Total: </Typography.Text>
+            <Typography.Text>${total.toLocaleString()}</Typography.Text>
+          </div>
         </Form>
+
+        <div style={{ marginTop: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <Title level={5} style={{ margin: 0 }}>Materia prima</Title>
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />} 
+              onClick={() => setMateriasItems([...materiasItems, { nombre: '', cantidad: 1, precioUnitario: 0 }])}
+            >
+              Agregar Materia
+            </Button>
+          </div>
+          <Table
+            dataSource={materiasItems}
+            pagination={false}
+            size="small"
+            rowKey={(record, index) => index?.toString() || '0'}
+            columns={[
+              { 
+                title: 'Nombre', 
+                dataIndex: 'nombre',
+                width: '40%',
+                render: (text: string, record: MateriaPrima, index: number) => (
+                  <Input
+                    value={text}
+                    onChange={(e) => {
+                      const newItems = [...materiasItems];
+                      newItems[index] = { ...record, nombre: e.target.value };
+                      setMateriasItems(newItems);
+                    }}
+                  />
+                )
+              },
+              { 
+                title: 'Cantidad', 
+                dataIndex: 'cantidad',
+                width: '20%',
+                render: (value: number, record: MateriaPrima, index: number) => (
+                  <InputNumber
+                    min={1}
+                    value={value}
+                    onChange={(value) => {
+                      const newItems = [...materiasItems];
+                      newItems[index] = { ...record, cantidad: value || 1 };
+                      setMateriasItems(newItems);
+                    }}
+                  />
+                )
+              },
+              { 
+                title: 'Precio Unitario', 
+                dataIndex: 'precioUnitario',
+                width: '25%',
+                render: (value: number, record: MateriaPrima, index: number) => (
+                  <InputNumber
+                    min={0}
+                    value={value}
+                    onChange={(value) => {
+                      const newItems = [...materiasItems];
+                      newItems[index] = { ...record, precioUnitario: value || 0 };
+                      setMateriasItems(newItems);
+                    }}
+                    prefix="$"
+                  />
+                )
+              },
+              {
+                title: '',
+                width: '10%',
+                render: (_: any, _record: MateriaPrima, index: number) => (
+                  <Button
+                    type="text"
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() => {
+                      const newItems = [...materiasItems];
+                      newItems.splice(index, 1);
+                      setMateriasItems(newItems);
+                    }}
+                  />
+                )
+              }
+            ]}
+          />
+        </div>
       </Modal>
       <Modal
         open={detalleOpen}

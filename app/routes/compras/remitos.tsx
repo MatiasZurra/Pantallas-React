@@ -1,6 +1,7 @@
 
-import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, Space, Typography } from "antd";
+import React, { useState, useEffect } from "react";
+import { Table, Button, Modal, Form, Input, Space, Typography, InputNumber, message } from "antd";
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -51,6 +52,8 @@ export default function RemitosCompras() {
   const [detalle, setDetalle] = useState<RemitoCompra | null>(null);
   const [form] = Form.useForm();
   const [search, setSearch] = useState("");
+  const [materiasItems, setMateriasItems] = useState<MateriaPrimaRemito[]>([]);
+  const [cantidadTotal, setCantidadTotal] = useState(0);
 
   const filteredData = data.filter(remito => {
     const searchLower = search.toLowerCase();
@@ -63,15 +66,24 @@ export default function RemitosCompras() {
     );
   });
 
+  useEffect(() => {
+    const total = materiasItems.reduce((acc, m) => acc + (m.cantidad || 0), 0);
+    setCantidadTotal(total);
+  }, [materiasItems]);
+
   const handleAdd = () => {
     setEditing(null);
     form.resetFields();
+    setMateriasItems([]);
+    setCantidadTotal(0);
     setModalOpen(true);
   };
 
   const handleEdit = (record: RemitoCompra) => {
     setEditing(record);
     form.setFieldsValue(record);
+    setMateriasItems(record.materiasPrimas);
+    setCantidadTotal(record.materiasPrimas.reduce((acc, m) => acc + (m.cantidad || 0), 0));
     setModalOpen(true);
   };
 
@@ -80,15 +92,23 @@ export default function RemitosCompras() {
   };
 
   const handleOk = () => {
-    form.validateFields().then((values: Omit<RemitoCompra, "key" | "materiasPrimas">) => {
-      const materiasPrimas = editing ? editing.materiasPrimas : [];
-      if (editing) {
-        setData(data.map(item => item.key === editing.key ? { ...editing, ...values, materiasPrimas } : item));
-      } else {
-        setData([...data, { ...values, materiasPrimas, key: Date.now() }]);
+    form.validateFields().then((values: Omit<RemitoCompra, "key" | "idRemito" | "materiasPrimas">) => {
+      if (materiasItems.length === 0) {
+        message.error('Debe agregar al menos una materia prima al remito');
+        return;
       }
+
+      if (editing) {
+        setData(data.map(item => item.key === editing.key ? { ...editing, ...values, materiasPrimas: materiasItems } : item));
+      } else {
+        const newId = `RC-${String(data.length + 1).padStart(3, '0')}`;
+        setData([...data, { ...values, materiasPrimas: materiasItems, idRemito: newId, key: Date.now() }]);
+      }
+
       setModalOpen(false);
       setEditing(null);
+      setMateriasItems([]);
+      setCantidadTotal(0);
       form.resetFields();
     });
   };
@@ -134,11 +154,88 @@ export default function RemitosCompras() {
         onOk={handleOk}
       >
         <Form form={form} layout="vertical">
-          <Form.Item label="ID Remito" name="idRemito" rules={[{ required: true, message: "Ingrese el ID de remito" }]}> <Input /> </Form.Item>
+          {editing && (
+            <div style={{ marginBottom: 16 }}>
+              <Typography.Text strong>ID Remito: </Typography.Text>
+              <Typography.Text>{editing.idRemito}</Typography.Text>
+            </div>
+          )}
           <Form.Item label="ID Proveedor" name="idProveedor" rules={[{ required: true, message: "Ingrese el ID de proveedor" }]}> <Input /> </Form.Item>
           <Form.Item label="Fecha" name="fecha" rules={[{ required: true, message: "Ingrese la fecha" }]}> <Input type="date" /> </Form.Item>
           <Form.Item label="Proveedor" name="nombreProveedor" rules={[{ required: true, message: "Ingrese el nombre del proveedor" }]}> <Input /> </Form.Item>
+          <div style={{ marginBottom: 12 }}>
+            <Typography.Text strong>Cantidad total: </Typography.Text>
+            <Typography.Text>{cantidadTotal}</Typography.Text>
+          </div>
         </Form>
+
+        <div style={{ marginTop: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <Title level={5} style={{ margin: 0 }}>Materia prima</Title>
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />} 
+              onClick={() => setMateriasItems([...materiasItems, { nombre: '', cantidad: 1 }])}
+            >
+              Agregar Materia Prima
+            </Button>
+          </div>
+          <Table
+            dataSource={materiasItems}
+            pagination={false}
+            size="small"
+            rowKey={(record, index) => index?.toString() || '0'}
+            columns={[
+              { 
+                title: 'Materia prima', 
+                dataIndex: 'nombre',
+                width: '60%',
+                render: (text: string, record: MateriaPrimaRemito, index: number) => (
+                  <Input
+                    value={text}
+                    onChange={(e) => {
+                      const newItems = [...materiasItems];
+                      newItems[index] = { ...record, nombre: e.target.value };
+                      setMateriasItems(newItems);
+                    }}
+                  />
+                )
+              },
+              { 
+                title: 'Cantidad', 
+                dataIndex: 'cantidad',
+                width: '30%',
+                render: (value: number, record: MateriaPrimaRemito, index: number) => (
+                  <InputNumber
+                    min={1}
+                    value={value}
+                    onChange={(value) => {
+                      const newItems = [...materiasItems];
+                      newItems[index] = { ...record, cantidad: value || 1 };
+                      setMateriasItems(newItems);
+                    }}
+                  />
+                )
+              },
+              {
+                title: '',
+                width: '10%',
+                render: (_: any, _record: MateriaPrimaRemito, index: number) => (
+                  <Button
+                    type="text"
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() => {
+                      const newItems = [...materiasItems];
+                      newItems.splice(index, 1);
+                      setMateriasItems(newItems);
+                    }}
+                  />
+                )
+              }
+            ]}
+          />
+        </div>
       </Modal>
       <Modal
         open={detalleOpen}

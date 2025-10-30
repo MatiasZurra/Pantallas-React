@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, Space, Typography } from "antd";
+import { Table, Button, Modal, Form, Input, Space, Typography, InputNumber, message } from "antd";
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -67,15 +68,19 @@ export default function ComprobantesVentas() {
     );
   });
 
+  const [detalleItems, setDetalleItems] = useState<DetalleComprobante[]>([]);
+
   const handleAdd = () => {
     setEditing(null);
     form.resetFields();
+    setDetalleItems([]);
     setModalOpen(true);
   };
 
   const handleEdit = (record: ComprobanteVenta) => {
     setEditing(record);
     form.setFieldsValue(record);
+    setDetalleItems(record.detalle);
     setModalOpen(true);
   };
 
@@ -84,14 +89,27 @@ export default function ComprobantesVentas() {
   };
 
   const handleOk = () => {
-    form.validateFields().then((values: Omit<ComprobanteVenta, "key">) => {
+    form.validateFields().then((values: Omit<ComprobanteVenta, "key" | "idComprobante">) => {
+      if (detalleItems.length === 0) {
+        message.error("Debe agregar al menos un producto al comprobante");
+        return;
+      }
+
       if (editing) {
-        setData(data.map(item => item.key === editing.key ? { ...editing, ...values } : item));
+        setData(data.map(item => item.key === editing.key ? { ...editing, ...values, detalle: detalleItems } : item));
       } else {
-        setData([...data, { ...values, key: Date.now(), detalle: [] }]);
+        // Generar un nuevo ID de comprobante (simulado)
+        const newId = `CV-${String(data.length + 1).padStart(3, '0')}`;
+        setData([...data, { 
+          ...values, 
+          key: Date.now(), 
+          idComprobante: newId,
+          detalle: detalleItems 
+        }]);
       }
       setModalOpen(false);
       setEditing(null);
+      setDetalleItems([]);
       form.resetFields();
     });
   };
@@ -138,12 +156,101 @@ export default function ComprobantesVentas() {
         onOk={handleOk}
       >
         <Form form={form} layout="vertical">
-          <Form.Item label="ID Comprobante" name="idComprobante" rules={[{ required: true, message: "Ingrese el ID de comprobante" }]}> <Input /> </Form.Item>
+          {editing && (
+            <div style={{ marginBottom: 16 }}>
+              <Typography.Text strong>ID Comprobante: </Typography.Text>
+              <Typography.Text>{editing.idComprobante}</Typography.Text>
+            </div>
+          )}
           <Form.Item label="Tipo" name="tipo" rules={[{ required: true, message: "Ingrese el tipo" }]}> <Input /> </Form.Item>
           <Form.Item label="Fecha" name="fecha" rules={[{ required: true, message: "Ingrese la fecha" }]}> <Input type="date" /> </Form.Item>
           <Form.Item label="Cliente" name="cliente" rules={[{ required: true, message: "Ingrese el cliente" }]}> <Input /> </Form.Item>
           <Form.Item label="Empleado" name="empleado" rules={[{ required: true, message: "Ingrese el empleado" }]}> <Input /> </Form.Item>
         </Form>
+        <div style={{ marginTop: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <Title level={5} style={{ margin: 0 }}>Detalle del Comprobante</Title>
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />} 
+              onClick={() => setDetalleItems([...detalleItems, { producto: '', cantidad: 1, precioUnitario: 0 }])}
+            >
+              Agregar Producto
+            </Button>
+          </div>
+          <Table
+            dataSource={detalleItems}
+            pagination={false}
+            size="small"
+            rowKey={(record, index) => index?.toString() || '0'}
+            columns={[
+              { 
+                title: 'Producto', 
+                dataIndex: 'producto',
+                width: '40%',
+                render: (text: string, record: DetalleComprobante, index: number) => (
+                  <Input
+                    value={text}
+                    onChange={(e) => {
+                      const newDetalle = [...detalleItems];
+                      newDetalle[index] = { ...record, producto: e.target.value };
+                      setDetalleItems(newDetalle);
+                    }}
+                  />
+                )
+              },
+              { 
+                title: 'Cantidad', 
+                dataIndex: 'cantidad',
+                width: '25%',
+                render: (value: number, record: DetalleComprobante, index: number) => (
+                  <InputNumber
+                    min={1}
+                    value={value}
+                    onChange={(value) => {
+                      const newDetalle = [...detalleItems];
+                      newDetalle[index] = { ...record, cantidad: value || 1 };
+                      setDetalleItems(newDetalle);
+                    }}
+                  />
+                )
+              },
+              { 
+                title: 'Precio Unitario', 
+                dataIndex: 'precioUnitario',
+                width: '25%',
+                render: (value: number, record: DetalleComprobante, index: number) => (
+                  <InputNumber
+                    min={0}
+                    value={value}
+                    onChange={(value) => {
+                      const newDetalle = [...detalleItems];
+                      newDetalle[index] = { ...record, precioUnitario: value || 0 };
+                      setDetalleItems(newDetalle);
+                    }}
+                    prefix="$"
+                  />
+                )
+              },
+              {
+                title: '',
+                width: '10%',
+                render: (_: any, _record: DetalleComprobante, index: number) => (
+                  <Button
+                    type="text"
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() => {
+                      const newDetalle = [...detalleItems];
+                      newDetalle.splice(index, 1);
+                      setDetalleItems(newDetalle);
+                    }}
+                  />
+                )
+              }
+            ]}
+          />
+        </div>
       </Modal>
       <Modal
         open={detalleOpen}

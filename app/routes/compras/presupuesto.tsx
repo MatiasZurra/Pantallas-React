@@ -1,6 +1,7 @@
 
-import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, Space, Typography } from "antd";
+import React, { useState, useEffect } from "react";
+import { Table, Button, Modal, Form, Input, Space, Typography, InputNumber, message } from "antd";
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -55,6 +56,8 @@ export default function PresupuestoCompras() {
   const [detalle, setDetalle] = useState<PresupuestoCompra | null>(null);
   const [form] = Form.useForm();
   const [search, setSearch] = useState("");
+  const [materiasItems, setMateriasItems] = useState<MateriaPrimaPresupuesto[]>([]);
+  const [total, setTotal] = useState<number>(0);
 
   const filteredData = data.filter(presupuesto => {
     const searchLower = search.toLowerCase();
@@ -67,14 +70,27 @@ export default function PresupuestoCompras() {
     );
   });
 
+  useEffect(() => {
+    const newTotal = materiasItems.reduce((acc, item) => acc + (item.cantidad * item.precioUnitario), 0);
+    setTotal(newTotal);
+  }, [materiasItems]);
+
   const handleAdd = () => {
     setEditing(null);
     form.resetFields();
+    setMateriasItems([]);
+    setTotal(0);
+    // Generar nuevo ID de presupuesto
+    const lastId = Math.max(...data.map(item => parseInt(item.idPresupuesto.split('-')[1])), 0);
+    const newId = `PB-${String(lastId + 1).padStart(3, '0')}`;
+    form.setFieldsValue({ idPresupuesto: newId });
     setModalOpen(true);
   };
 
   const handleEdit = (record: PresupuestoCompra) => {
     setEditing(record);
+    setMateriasItems(record.materiasPrimas);
+    setTotal(record.total);
     form.setFieldsValue(record);
     setModalOpen(true);
   };
@@ -84,16 +100,31 @@ export default function PresupuestoCompras() {
   };
 
   const handleOk = () => {
-    form.validateFields().then((values: Omit<PresupuestoCompra, "key" | "materiasPrimas" | "total">) => {
-      const materiasPrimas = editing ? editing.materiasPrimas : [];
-      const total = materiasPrimas.reduce((acc, mat) => acc + mat.cantidad * mat.precioUnitario, 0);
+    if (materiasItems.length === 0) {
+      message.error('Debe agregar al menos una materia prima');
+      return;
+    }
+
+    form.validateFields().then((values: Omit<PresupuestoCompra, 'key' | 'materiasPrimas' | 'total'>) => {
       if (editing) {
-        setData(data.map(item => item.key === editing.key ? { ...editing, ...values, materiasPrimas, total } : item));
+        setData(data.map(item => item.key === editing.key ? { 
+          ...editing, 
+          ...values, 
+          materiasPrimas: materiasItems,
+          total 
+        } : item));
       } else {
-        setData([...data, { ...values, materiasPrimas, total, key: Date.now() }]);
+        setData([...data, { 
+          ...values, 
+          materiasPrimas: materiasItems,
+          total,
+          key: Date.now() 
+        }]);
       }
       setModalOpen(false);
       setEditing(null);
+      setMateriasItems([]);
+      setTotal(0);
       form.resetFields();
     });
   };
@@ -136,15 +167,113 @@ export default function PresupuestoCompras() {
       <Modal
         open={modalOpen}
         title={editing ? "Editar presupuesto" : "Agregar presupuesto"}
-        onCancel={() => { setModalOpen(false); setEditing(null); form.resetFields(); }}
+        onCancel={() => { 
+          setModalOpen(false); 
+          setEditing(null); 
+          setMateriasItems([]); 
+          setTotal(0);
+          form.resetFields(); 
+        }}
         onOk={handleOk}
+        width={800}
       >
         <Form form={form} layout="vertical">
-          <Form.Item label="ID Presupuesto" name="idPresupuesto" rules={[{ required: true, message: "Ingrese el ID de presupuesto" }]}> <Input /> </Form.Item>
-          <Form.Item label="ID Proveedor" name="idProveedor" rules={[{ required: true, message: "Ingrese el ID de proveedor" }]}> <Input /> </Form.Item>
-          <Form.Item label="Fecha" name="fecha" rules={[{ required: true, message: "Ingrese la fecha" }]}> <Input type="date" /> </Form.Item>
-          <Form.Item label="Proveedor" name="nombreProveedor" rules={[{ required: true, message: "Ingrese el nombre del proveedor" }]}> <Input /> </Form.Item>
-          <Form.Item label="Total" name="total" rules={[{ required: true, message: "Ingrese el total" }]}> <Input type="number" /> </Form.Item>
+          <Form.Item label="ID Presupuesto" name="idPresupuesto"> 
+            <Input disabled={!editing} />
+          </Form.Item>
+          <Form.Item label="ID Proveedor" name="idProveedor" rules={[{ required: true, message: "Ingrese el ID de proveedor" }]}> 
+            <Input /> 
+          </Form.Item>
+          <Form.Item label="Fecha" name="fecha" rules={[{ required: true, message: "Ingrese la fecha" }]}> 
+            <Input type="date" /> 
+          </Form.Item>
+          <Form.Item label="Proveedor" name="nombreProveedor" rules={[{ required: true, message: "Ingrese el nombre del proveedor" }]}> 
+            <Input /> 
+          </Form.Item>
+
+          <div style={{ marginBottom: 16 }}>
+            <Title level={5}>Materias Primas</Title>
+            <Button 
+              type="dashed" 
+              onClick={() => setMateriasItems([...materiasItems, { nombre: '', cantidad: 0, precioUnitario: 0 }])}
+              icon={<PlusOutlined />}
+              style={{ marginBottom: 8 }}
+            >
+              Agregar materia prima
+            </Button>
+            <Table
+              dataSource={materiasItems}
+              pagination={false}
+              rowKey={(record, index) => index?.toString() || '0'}
+              columns={[
+                {
+                  title: 'Materia Prima',
+                  dataIndex: 'nombre',
+                  render: (_, record, index) => (
+                    <Input
+                      value={record.nombre}
+                      onChange={e => {
+                        const newItems = [...materiasItems];
+                        newItems[index].nombre = e.target.value;
+                        setMateriasItems(newItems);
+                      }}
+                    />
+                  )
+                },
+                {
+                  title: 'Cantidad',
+                  dataIndex: 'cantidad',
+                  render: (_, record, index) => (
+                    <InputNumber
+                      value={record.cantidad}
+                      min={0}
+                      onChange={value => {
+                        const newItems = [...materiasItems];
+                        newItems[index].cantidad = value || 0;
+                        setMateriasItems(newItems);
+                      }}
+                    />
+                  )
+                },
+                {
+                  title: 'Precio Unitario',
+                  dataIndex: 'precioUnitario',
+                  render: (_, record, index) => (
+                    <InputNumber
+                      value={record.precioUnitario}
+                      min={0}
+                      prefix="$"
+                      onChange={value => {
+                        const newItems = [...materiasItems];
+                        newItems[index].precioUnitario = value || 0;
+                        setMateriasItems(newItems);
+                      }}
+                    />
+                  )
+                },
+                {
+                  title: 'Acciones',
+                  render: (_, __, index) => (
+                    <Button
+                      type="link"
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => setMateriasItems(materiasItems.filter((_, i) => i !== index))}
+                    />
+                  )
+                }
+              ]}
+            />
+          </div>
+
+          <Form.Item label="Total">
+            <InputNumber
+              disabled
+              value={total}
+              prefix="$"
+              style={{ width: '200px' }}
+            />
+          </Form.Item>
         </Form>
       </Modal>
       <Modal

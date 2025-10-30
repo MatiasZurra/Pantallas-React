@@ -1,6 +1,7 @@
 
-import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, Space, Typography } from "antd";
+import React, { useState, useEffect } from "react";
+import { Table, Button, Modal, Form, Input, Space, Typography, InputNumber, message } from "antd";
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 type MateriaPrimaPago = {
@@ -54,6 +55,8 @@ export default function PagosProveedorCompras() {
   const [detalle, setDetalle] = useState<PagoProveedor | null>(null);
   const [form] = Form.useForm();
   const [search, setSearch] = useState("");
+  const [materiasItems, setMateriasItems] = useState<MateriaPrimaPago[]>([]);
+  const [monto, setMonto] = useState(0);
 
   const filteredData = data.filter(pago => {
     const searchLower = search.toLowerCase();
@@ -69,12 +72,16 @@ export default function PagosProveedorCompras() {
   const handleAdd = () => {
     setEditing(null);
     form.resetFields();
+    setMateriasItems([]);
+    setMonto(0);
     setModalOpen(true);
   };
 
   const handleEdit = (record: PagoProveedor) => {
     setEditing(record);
     form.setFieldsValue(record);
+    setMateriasItems(record.materiasPrimas);
+    setMonto(record.monto);
     setModalOpen(true);
   };
 
@@ -83,19 +90,31 @@ export default function PagosProveedorCompras() {
   };
 
   const handleOk = () => {
-    form.validateFields().then((values: Omit<PagoProveedor, "key" | "materiasPrimas" | "monto">) => {
-      const materiasPrimas = editing ? editing.materiasPrimas : [];
-      const monto = materiasPrimas.reduce((acc, mat) => acc + mat.cantidad * mat.precioUnitario, 0);
-      if (editing) {
-        setData(data.map(item => item.key === editing.key ? { ...editing, ...values, materiasPrimas, monto } : item));
-      } else {
-        setData([...data, { ...values, materiasPrimas, monto, key: Date.now() }]);
+    form.validateFields().then((values: Omit<PagoProveedor, "key" | "idPago" | "materiasPrimas" | "monto">) => {
+      if (materiasItems.length === 0) {
+        message.error("Debe agregar al menos una materia prima al pago");
+        return;
       }
+
+      if (editing) {
+        setData(data.map(item => item.key === editing.key ? { ...editing, ...values, materiasPrimas: materiasItems, monto } : item));
+      } else {
+        const newId = `PGP-${String(data.length + 1).padStart(3, '0')}`;
+        setData([...data, { ...values, materiasPrimas: materiasItems, monto, idPago: newId, key: Date.now() }]);
+      }
+
       setModalOpen(false);
       setEditing(null);
+      setMateriasItems([]);
+      setMonto(0);
       form.resetFields();
     });
   };
+
+  useEffect(() => {
+    const newMonto = materiasItems.reduce((acc, m) => acc + (m.cantidad * m.precioUnitario), 0);
+    setMonto(newMonto);
+  }, [materiasItems]);
 
   const columns = [
     { title: "ID Pago", dataIndex: "idPago" },
@@ -139,12 +158,105 @@ export default function PagosProveedorCompras() {
         onOk={handleOk}
       >
         <Form form={form} layout="vertical">
-          <Form.Item label="ID Pago" name="idPago" rules={[{ required: true, message: "Ingrese el ID de pago" }]}> <Input /> </Form.Item>
+          {editing && (
+            <div style={{ marginBottom: 16 }}>
+              <Typography.Text strong>ID Pago: </Typography.Text>
+              <Typography.Text>{editing.idPago}</Typography.Text>
+            </div>
+          )}
           <Form.Item label="ID Proveedor" name="idProveedor" rules={[{ required: true, message: "Ingrese el ID de proveedor" }]}> <Input /> </Form.Item>
           <Form.Item label="Fecha" name="fecha" rules={[{ required: true, message: "Ingrese la fecha" }]}> <Input type="date" /> </Form.Item>
           <Form.Item label="Proveedor" name="nombreProveedor" rules={[{ required: true, message: "Ingrese el nombre del proveedor" }]}> <Input /> </Form.Item>
-          <Form.Item label="Monto" name="monto" rules={[{ required: true, message: "Ingrese el monto" }]}> <Input type="number" /> </Form.Item>
+          <div style={{ marginBottom: 12 }}>
+            <Typography.Text strong>Monto: </Typography.Text>
+            <Typography.Text>${monto.toLocaleString()}</Typography.Text>
+          </div>
         </Form>
+
+        <div style={{ marginTop: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <Title level={5} style={{ margin: 0 }}>Materia prima</Title>
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />} 
+              onClick={() => setMateriasItems([...materiasItems, { nombre: '', cantidad: 1, precioUnitario: 0 }])}
+            >
+              Agregar Materia
+            </Button>
+          </div>
+          <Table
+            dataSource={materiasItems}
+            pagination={false}
+            size="small"
+            rowKey={(record, index) => index?.toString() || '0'}
+            columns={[
+              { 
+                title: 'Materia prima', 
+                dataIndex: 'nombre',
+                width: '40%',
+                render: (text: string, record: MateriaPrimaPago, index: number) => (
+                  <Input
+                    value={text}
+                    onChange={(e) => {
+                      const newItems = [...materiasItems];
+                      newItems[index] = { ...record, nombre: e.target.value };
+                      setMateriasItems(newItems);
+                    }}
+                  />
+                )
+              },
+              { 
+                title: 'Cantidad', 
+                dataIndex: 'cantidad',
+                width: '20%',
+                render: (value: number, record: MateriaPrimaPago, index: number) => (
+                  <InputNumber
+                    min={1}
+                    value={value}
+                    onChange={(value) => {
+                      const newItems = [...materiasItems];
+                      newItems[index] = { ...record, cantidad: value || 1 };
+                      setMateriasItems(newItems);
+                    }}
+                  />
+                )
+              },
+              { 
+                title: 'Precio Unitario', 
+                dataIndex: 'precioUnitario',
+                width: '25%',
+                render: (value: number, record: MateriaPrimaPago, index: number) => (
+                  <InputNumber
+                    min={0}
+                    value={value}
+                    onChange={(value) => {
+                      const newItems = [...materiasItems];
+                      newItems[index] = { ...record, precioUnitario: value || 0 };
+                      setMateriasItems(newItems);
+                    }}
+                    prefix="$"
+                  />
+                )
+              },
+              {
+                title: '',
+                width: '10%',
+                render: (_: any, _record: MateriaPrimaPago, index: number) => (
+                  <Button
+                    type="text"
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() => {
+                      const newItems = [...materiasItems];
+                      newItems.splice(index, 1);
+                      setMateriasItems(newItems);
+                    }}
+                  />
+                )
+              }
+            ]}
+          />
+        </div>
       </Modal>
       <Modal
         open={detalleOpen}

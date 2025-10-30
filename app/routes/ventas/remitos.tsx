@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, Space, Typography } from "antd";
+import React, { useState, useEffect } from "react";
+import { Table, Button, Modal, Form, Input, Space, Typography, InputNumber, message } from "antd";
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -50,6 +51,8 @@ export default function RemitosVentas() {
   const [detalle, setDetalle] = useState<Remito | null>(null);
   const [form] = Form.useForm();
   const [search, setSearch] = useState("");
+  const [productoItems, setProductoItems] = useState<ProductoRemito[]>([]);
+  const [cantidadTotal, setCantidadTotal] = useState(0);
 
   const filteredData = data.filter(remito => {
     const searchLower = search.toLowerCase();
@@ -62,15 +65,24 @@ export default function RemitosVentas() {
     );
   });
 
+  useEffect(() => {
+    const total = productoItems.reduce((acc, p) => acc + (p.cantidad || 0), 0);
+    setCantidadTotal(total);
+  }, [productoItems]);
+
   const handleAdd = () => {
     setEditing(null);
     form.resetFields();
+    setProductoItems([]);
+    setCantidadTotal(0);
     setModalOpen(true);
   };
 
   const handleEdit = (record: Remito) => {
     setEditing(record);
     form.setFieldsValue(record);
+    setProductoItems(record.productos);
+    setCantidadTotal(record.productos.reduce((acc,p)=>acc+p.cantidad,0));
     setModalOpen(true);
   };
 
@@ -79,14 +91,22 @@ export default function RemitosVentas() {
   };
 
   const handleOk = () => {
-    form.validateFields().then((values: Omit<Remito, "key">) => {
+    form.validateFields().then((values: Omit<Remito, "key" | "idRemito" | "productos">) => {
+      if (productoItems.length === 0) {
+        message.error("Debe agregar al menos un producto al remito");
+        return;
+      }
+
       if (editing) {
-        setData(data.map(item => item.key === editing.key ? { ...editing, ...values } : item));
+        setData(data.map(item => item.key === editing.key ? { ...editing, ...values, productos: productoItems } : item));
       } else {
-        setData([...data, { ...values, key: Date.now() }]);
+        const newId = `R-${String(data.length + 1).padStart(3, '0')}`;
+        setData([...data, { ...values, key: Date.now(), idRemito: newId, productos: productoItems }]);
       }
       setModalOpen(false);
       setEditing(null);
+      setProductoItems([]);
+      setCantidadTotal(0);
       form.resetFields();
     });
   };
@@ -137,12 +157,88 @@ export default function RemitosVentas() {
         onOk={handleOk}
       >
         <Form form={form} layout="vertical">
-          <Form.Item label="ID Remito" name="idRemito" rules={[{ required: true, message: "Ingrese el ID de remito" }]}> <Input /> </Form.Item>
+          {editing && (
+            <div style={{ marginBottom: 16 }}>
+              <Typography.Text strong>ID Remito: </Typography.Text>
+              <Typography.Text>{editing.idRemito}</Typography.Text>
+            </div>
+          )}
           <Form.Item label="ID Cliente" name="idCliente" rules={[{ required: true, message: "Ingrese el ID de cliente" }]}> <Input /> </Form.Item>
           <Form.Item label="Fecha" name="fecha" rules={[{ required: true, message: "Ingrese la fecha" }]}> <Input type="date" /> </Form.Item>
           <Form.Item label="Cliente" name="nombreCliente" rules={[{ required: true, message: "Ingrese el nombre del cliente" }]}> <Input /> </Form.Item>
-          <Form.Item label="Cantidad" name="total" rules={[{ required: true, message: "Ingrese el total" }]}> <Input type="number" /> </Form.Item>
+          <div style={{ marginBottom: 12 }}>
+            <Typography.Text strong>Cantidad total: </Typography.Text>
+            <Typography.Text>{cantidadTotal}</Typography.Text>
+          </div>
         </Form>
+
+        <div style={{ marginTop: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <Title level={5} style={{ margin: 0 }}>Productos</Title>
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />} 
+              onClick={() => setProductoItems([...productoItems, { nombre: '', cantidad: 1 }])}
+            >
+              Agregar Producto
+            </Button>
+          </div>
+          <Table
+            dataSource={productoItems}
+            pagination={false}
+            size="small"
+            rowKey={(record, index) => index?.toString() || '0'}
+            columns={[
+              { 
+                title: 'Producto', 
+                dataIndex: 'nombre',
+                width: '60%',
+                render: (text: string, record: ProductoRemito, index: number) => (
+                  <Input
+                    value={text}
+                    onChange={(e) => {
+                      const newItems = [...productoItems];
+                      newItems[index] = { ...record, nombre: e.target.value };
+                      setProductoItems(newItems);
+                    }}
+                  />
+                )
+              },
+              { 
+                title: 'Cantidad', 
+                dataIndex: 'cantidad',
+                width: '30%',
+                render: (value: number, record: ProductoRemito, index: number) => (
+                  <InputNumber
+                    min={1}
+                    value={value}
+                    onChange={(value) => {
+                      const newItems = [...productoItems];
+                      newItems[index] = { ...record, cantidad: value || 1 };
+                      setProductoItems(newItems);
+                    }}
+                  />
+                )
+              },
+              {
+                title: '',
+                width: '10%',
+                render: (_: any, _record: ProductoRemito, index: number) => (
+                  <Button
+                    type="text"
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() => {
+                      const newItems = [...productoItems];
+                      newItems.splice(index, 1);
+                      setProductoItems(newItems);
+                    }}
+                  />
+                )
+              }
+            ]}
+          />
+        </div>
       </Modal>
       <Modal
         open={detalleOpen}

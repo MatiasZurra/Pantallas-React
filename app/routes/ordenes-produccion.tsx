@@ -1,14 +1,19 @@
-import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, Space, Typography } from "antd";
+import React, { useState, useEffect } from "react";
+import { Table, Button, Modal, Form, Input, Space, Typography, InputNumber, message } from "antd";
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+
 const { Title } = Typography;
+
 type ProductoElaborado = {
   nombre: string;
   cantidad: number;
+  descripcion?: string;
 };
 
 type MateriaPrimaUtilizada = {
   nombre: string;
   cantidad: number;
+  unidad: string;
 };
 
 type OrdenProduccion = {
@@ -31,9 +36,9 @@ const datosEjemplo: OrdenProduccion[] = [
       { nombre: "Bizcocho", cantidad: 50 },
     ],
     materiasPrimas: [
-      { nombre: "Harina", cantidad: 80 },
-      { nombre: "Levadura", cantidad: 10 },
-      { nombre: "Sal", cantidad: 5 },
+      { nombre: "Harina", cantidad: 80, unidad: "kg" },
+      { nombre: "Levadura", cantidad: 10, unidad: "kg" },
+      { nombre: "Sal", cantidad: 5, unidad: "kg" },
     ],
   },
   {
@@ -45,9 +50,9 @@ const datosEjemplo: OrdenProduccion[] = [
       { nombre: "Torta", cantidad: 20 },
     ],
     materiasPrimas: [
-      { nombre: "Harina", cantidad: 20 },
-      { nombre: "Azúcar", cantidad: 5 },
-      { nombre: "Huevos", cantidad: 12 },
+      { nombre: "Harina", cantidad: 20, unidad: "kg" },
+      { nombre: "Azúcar", cantidad: 5, unidad: "kg" },
+      { nombre: "Huevos", cantidad: 12, unidad: "unidades" },
     ],
   },
 ];
@@ -60,6 +65,8 @@ export default function OrdenesProduccion() {
   const [detalle, setDetalle] = useState<OrdenProduccion | null>(null);
   const [form] = Form.useForm();
   const [search, setSearch] = useState("");
+  const [productos, setProductos] = useState<ProductoElaborado[]>([]);
+  const [materiasPrimas, setMateriasPrimas] = useState<MateriaPrimaUtilizada[]>([]);
 
   const filteredData = data.filter(orden => {
     const searchLower = search.toLowerCase();
@@ -92,11 +99,23 @@ export default function OrdenesProduccion() {
   function handleAdd() {
     setEditing(null);
     form.resetFields();
+    setProductos([]);
+    setMateriasPrimas([]);
+    
+    // Generar nuevo ID
+    const lastId = Math.max(...data.map(item => parseInt(item.idOrdenProduccion.split('-')[1])), 0);
+    const newId = `OPR-${String(lastId + 1).padStart(3, '0')}`;
+    form.setFieldsValue({ 
+      idOrdenProduccion: newId,
+      fechaElaboracion: new Date().toISOString().split('T')[0]
+    });
     setModalOpen(true);
   }
 
   function handleEdit(record: OrdenProduccion) {
     setEditing(record);
+    setProductos(record.productos);
+    setMateriasPrimas(record.materiasPrimas);
     form.setFieldsValue(record);
     setModalOpen(true);
   }
@@ -106,16 +125,36 @@ export default function OrdenesProduccion() {
   }
 
   function handleOk() {
-    form.validateFields().then((values: Omit<OrdenProduccion, "key" | "productos" | "materiasPrimas">) => {
-      const productos = editing ? editing.productos : [];
-      const materiasPrimas = editing ? editing.materiasPrimas : [];
+    if (materiasPrimas.length === 0) {
+      message.error('Debe agregar al menos una materia prima');
+      return;
+    }
+
+    if (productos.length === 0) {
+      message.error('Debe agregar al menos un producto');
+      return;
+    }
+
+    form.validateFields().then((values: Omit<OrdenProduccion, 'key' | 'productos' | 'materiasPrimas'>) => {
       if (editing) {
-        setData(data.map(item => item.key === editing.key ? { ...editing, ...values, productos, materiasPrimas } : item));
+        setData(data.map(item => item.key === editing.key ? { 
+          ...editing, 
+          ...values, 
+          productos, 
+          materiasPrimas 
+        } : item));
       } else {
-        setData([...data, { ...values, productos, materiasPrimas, key: Date.now() }]);
+        setData([...data, { 
+          ...values, 
+          productos, 
+          materiasPrimas,
+          key: Date.now() 
+        }]);
       }
       setModalOpen(false);
       setEditing(null);
+      setProductos([]);
+      setMateriasPrimas([]);
       form.resetFields();
     });
   }
@@ -140,13 +179,174 @@ export default function OrdenesProduccion() {
       <Modal
         open={modalOpen}
         title={editing ? "Editar orden de producción" : "Agregar orden de producción"}
-        onCancel={() => { setModalOpen(false); setEditing(null); form.resetFields(); }}
+        onCancel={() => { 
+          setModalOpen(false); 
+          setEditing(null); 
+          setProductos([]);
+          setMateriasPrimas([]);
+          form.resetFields(); 
+        }}
         onOk={handleOk}
+        width={1000}
       >
         <Form form={form} layout="vertical">
-          <Form.Item label="ID Orden de Producción" name="idOrdenProduccion" rules={[{ required: true, message: "Ingrese el ID de orden de producción" }]}> <Input /> </Form.Item>
-          <Form.Item label="ID Empleado" name="idEmpleado" rules={[{ required: true, message: "Ingrese el ID de empleado" }]}> <Input /> </Form.Item>
-          <Form.Item label="Fecha de elaboración" name="fechaElaboracion" rules={[{ required: true, message: "Ingrese la fecha de elaboración" }]}> <Input type="date" /> </Form.Item>
+          <Form.Item label="ID Orden de Producción" name="idOrdenProduccion">
+            <Input disabled />
+          </Form.Item>
+          <Form.Item label="ID Empleado" name="idEmpleado" rules={[{ required: true, message: "Ingrese el ID de empleado" }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="Fecha de elaboración" name="fechaElaboracion" rules={[{ required: true, message: "Ingrese la fecha de elaboración" }]}>
+            <Input type="date" />
+          </Form.Item>
+
+          {/* Tabla de Materias Primas */}
+          <div style={{ marginBottom: 16 }}>
+            <Title level={5}>Materias Primas</Title>
+            <Button
+              type="dashed"
+              onClick={() => setMateriasPrimas([...materiasPrimas, { nombre: '', cantidad: 0, unidad: 'kg' }])}
+              icon={<PlusOutlined />}
+              style={{ marginBottom: 8 }}
+            >
+              Agregar Materia Prima
+            </Button>
+            <Table
+              dataSource={materiasPrimas}
+              pagination={false}
+              rowKey={(record, index) => `mp-${index}`}
+              columns={[
+                {
+                  title: 'Materia Prima',
+                  dataIndex: 'nombre',
+                  render: (_, record, index) => (
+                    <Input
+                      value={record.nombre}
+                      onChange={e => {
+                        const newItems = [...materiasPrimas];
+                        newItems[index].nombre = e.target.value;
+                        setMateriasPrimas(newItems);
+                      }}
+                    />
+                  )
+                },
+                {
+                  title: 'Cantidad',
+                  dataIndex: 'cantidad',
+                  render: (_, record, index) => (
+                    <InputNumber
+                      value={record.cantidad}
+                      min={0}
+                      onChange={value => {
+                        const newItems = [...materiasPrimas];
+                        newItems[index].cantidad = value || 0;
+                        setMateriasPrimas(newItems);
+                      }}
+                    />
+                  )
+                },
+                {
+                  title: 'Unidad',
+                  dataIndex: 'unidad',
+                  render: (_, record, index) => (
+                    <Input
+                      value={record.unidad}
+                      onChange={e => {
+                        const newItems = [...materiasPrimas];
+                        newItems[index].unidad = e.target.value;
+                        setMateriasPrimas(newItems);
+                      }}
+                    />
+                  )
+                },
+                {
+                  title: 'Acciones',
+                  render: (_, __, index) => (
+                    <Button
+                      type="link"
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => setMateriasPrimas(materiasPrimas.filter((_, i) => i !== index))}
+                    />
+                  )
+                }
+              ]}
+            />
+          </div>
+
+          {/* Tabla de Productos */}
+          <div style={{ marginBottom: 16 }}>
+            <Title level={5}>Productos a Elaborar</Title>
+            <Button
+              type="dashed"
+              onClick={() => setProductos([...productos, { nombre: '', cantidad: 0, descripcion: '' }])}
+              icon={<PlusOutlined />}
+              style={{ marginBottom: 8 }}
+            >
+              Agregar Producto
+            </Button>
+            <Table
+              dataSource={productos}
+              pagination={false}
+              rowKey={(record, index) => `prod-${index}`}
+              columns={[
+                {
+                  title: 'Producto',
+                  dataIndex: 'nombre',
+                  render: (_, record, index) => (
+                    <Input
+                      value={record.nombre}
+                      onChange={e => {
+                        const newItems = [...productos];
+                        newItems[index].nombre = e.target.value;
+                        setProductos(newItems);
+                      }}
+                    />
+                  )
+                },
+                {
+                  title: 'Cantidad',
+                  dataIndex: 'cantidad',
+                  render: (_, record, index) => (
+                    <InputNumber
+                      value={record.cantidad}
+                      min={0}
+                      onChange={value => {
+                        const newItems = [...productos];
+                        newItems[index].cantidad = value || 0;
+                        setProductos(newItems);
+                      }}
+                    />
+                  )
+                },
+                {
+                  title: 'Descripción',
+                  dataIndex: 'descripcion',
+                  render: (_, record, index) => (
+                    <Input
+                      value={record.descripcion}
+                      onChange={e => {
+                        const newItems = [...productos];
+                        newItems[index].descripcion = e.target.value;
+                        setProductos(newItems);
+                      }}
+                    />
+                  )
+                },
+                {
+                  title: 'Acciones',
+                  render: (_, __, index) => (
+                    <Button
+                      type="link"
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => setProductos(productos.filter((_, i) => i !== index))}
+                    />
+                  )
+                }
+              ]}
+            />
+          </div>
         </Form>
       </Modal>
       <Modal

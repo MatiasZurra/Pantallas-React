@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, Space, Typography } from "antd";
+import React, { useState, useEffect } from "react";
+import { Table, Button, Modal, Form, Input, Space, Typography, InputNumber, message } from "antd";
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -54,6 +55,8 @@ export default function PagosClienteVentas() {
   const [detalle, setDetalle] = useState<PagoCliente | null>(null);
   const [form] = Form.useForm();
   const [search, setSearch] = useState("");
+  const [productoItems, setProductoItems] = useState<ProductoPago[]>([]);
+  const [total, setTotal] = useState(0);
 
   const filteredData = data.filter(pago => {
     const searchLower = search.toLowerCase();
@@ -67,15 +70,25 @@ export default function PagosClienteVentas() {
     );
   });
 
+  // recalcular total cuando cambian los productos
+  useEffect(() => {
+    const newTotal = productoItems.reduce((acc, p) => acc + (p.cantidad * p.precioUnitario), 0);
+    setTotal(newTotal);
+  }, [productoItems]);
+
   const handleAdd = () => {
     setEditing(null);
     form.resetFields();
+    setProductoItems([]);
+    setTotal(0);
     setModalOpen(true);
   };
 
   const handleEdit = (record: PagoCliente) => {
     setEditing(record);
     form.setFieldsValue(record);
+    setProductoItems(record.productos);
+    setTotal(record.monto);
     setModalOpen(true);
   };
 
@@ -84,14 +97,22 @@ export default function PagosClienteVentas() {
   };
 
   const handleOk = () => {
-    form.validateFields().then((values: Omit<PagoCliente, "key">) => {
+    form.validateFields().then((values: Omit<PagoCliente, "key" | "idPago" | "productos" | "monto">) => {
+      if (productoItems.length === 0) {
+        message.error("Debe agregar al menos un producto al pago");
+        return;
+      }
+
       if (editing) {
-        setData(data.map(item => item.key === editing.key ? { ...editing, ...values } : item));
+        setData(data.map(item => item.key === editing.key ? { ...editing, ...values, productos: productoItems, monto: total } : item));
       } else {
-        setData([...data, { ...values, key: Date.now() }]);
+        const newId = `PG-${String(data.length + 1).padStart(3, '0')}`;
+        setData([...data, { ...values, key: Date.now(), idPago: newId, productos: productoItems, monto: total }]);
       }
       setModalOpen(false);
       setEditing(null);
+      setProductoItems([]);
+      setTotal(0);
       form.resetFields();
     });
   };
@@ -138,12 +159,105 @@ export default function PagosClienteVentas() {
         onOk={handleOk}
       >
         <Form form={form} layout="vertical">
-          <Form.Item label="ID Pago" name="idPago" rules={[{ required: true, message: "Ingrese el ID de pago" }]}> <Input /> </Form.Item>
+          {editing && (
+            <div style={{ marginBottom: 16 }}>
+              <Typography.Text strong>ID Pago: </Typography.Text>
+              <Typography.Text>{editing.idPago}</Typography.Text>
+            </div>
+          )}
           <Form.Item label="ID Cliente" name="idCliente" rules={[{ required: true, message: "Ingrese el ID de cliente" }]}> <Input /> </Form.Item>
           <Form.Item label="Fecha" name="fecha" rules={[{ required: true, message: "Ingrese la fecha" }]}> <Input type="date" /> </Form.Item>
           <Form.Item label="Cliente" name="nombreCliente" rules={[{ required: true, message: "Ingrese el nombre del cliente" }]}> <Input /> </Form.Item>
-          <Form.Item label="Monto" name="monto" rules={[{ required: true, message: "Ingrese el monto" }]}> <Input type="number" /> </Form.Item>
+          <div style={{ marginBottom: 12 }}>
+            <Typography.Text strong>Monto: </Typography.Text>
+            <Typography.Text>${total.toLocaleString()}</Typography.Text>
+          </div>
         </Form>
+
+        <div style={{ marginTop: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <Title level={5} style={{ margin: 0 }}>Productos pagados</Title>
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />} 
+              onClick={() => setProductoItems([...productoItems, { nombre: '', cantidad: 1, precioUnitario: 0 }])}
+            >
+              Agregar Producto
+            </Button>
+          </div>
+          <Table
+            dataSource={productoItems}
+            pagination={false}
+            size="small"
+            rowKey={(record, index) => index?.toString() || '0'}
+            columns={[
+              { 
+                title: 'Producto', 
+                dataIndex: 'nombre',
+                width: '40%',
+                render: (text: string, record: ProductoPago, index: number) => (
+                  <Input
+                    value={text}
+                    onChange={(e) => {
+                      const newItems = [...productoItems];
+                      newItems[index] = { ...record, nombre: e.target.value };
+                      setProductoItems(newItems);
+                    }}
+                  />
+                )
+              },
+              { 
+                title: 'Cantidad', 
+                dataIndex: 'cantidad',
+                width: '25%',
+                render: (value: number, record: ProductoPago, index: number) => (
+                  <InputNumber
+                    min={1}
+                    value={value}
+                    onChange={(value) => {
+                      const newItems = [...productoItems];
+                      newItems[index] = { ...record, cantidad: value || 1 };
+                      setProductoItems(newItems);
+                    }}
+                  />
+                )
+              },
+              { 
+                title: 'Precio Unitario', 
+                dataIndex: 'precioUnitario',
+                width: '25%',
+                render: (value: number, record: ProductoPago, index: number) => (
+                  <InputNumber
+                    min={0}
+                    value={value}
+                    onChange={(value) => {
+                      const newItems = [...productoItems];
+                      newItems[index] = { ...record, precioUnitario: value || 0 };
+                      setProductoItems(newItems);
+                    }}
+                    prefix="$"
+                  />
+                )
+              },
+              {
+                title: '',
+                width: '10%',
+                render: (_: any, _record: ProductoPago, index: number) => (
+                  <Button
+                    type="text"
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() => {
+                      const newItems = [...productoItems];
+                      newItems.splice(index, 1);
+                      setProductoItems(newItems);
+                    }}
+                  />
+                )
+              }
+            ]}
+          />
+        </div>
       </Modal>
       <Modal
         open={detalleOpen}

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, Space, Typography } from "antd";
+import { Table, Button, Modal, Form, Input, Space, Typography, InputNumber, message, Switch } from "antd";
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
@@ -67,6 +68,7 @@ export default function OrdenPedidoVentas() {
   const [detalle, setDetalle] = useState<OrdenPedido | null>(null);
   const [form] = Form.useForm();
   const [search, setSearch] = useState("");
+  const [productoItems, setProductoItems] = useState<ProductoPedido[]>([]);
 
   const filteredData = data.filter(pedido => {
     const searchLower = search.toLowerCase();
@@ -87,12 +89,14 @@ export default function OrdenPedidoVentas() {
   const handleAdd = () => {
     setEditing(null);
     form.resetFields();
+    setProductoItems([]);
     setModalOpen(true);
   };
 
   const handleEdit = (record: OrdenPedido) => {
     setEditing(record);
     form.setFieldsValue(record);
+    setProductoItems(record.productos);
     setModalOpen(true);
   };
 
@@ -101,14 +105,27 @@ export default function OrdenPedidoVentas() {
   };
 
   const handleOk = () => {
-    form.validateFields().then((values: Omit<OrdenPedido, "key">) => {
+    form.validateFields().then((values: Omit<OrdenPedido, "key" | "idPedido" | "productos">) => {
+      if (productoItems.length === 0) {
+        message.error("Debe agregar al menos un producto al pedido");
+        return;
+      }
+
       if (editing) {
-        setData(data.map(item => item.key === editing.key ? { ...editing, ...values } : item));
+        setData(data.map(item => item.key === editing.key ? { ...editing, ...values, productos: productoItems } : item));
       } else {
-        setData([...data, { ...values, key: Date.now(), productos: [] }]);
+        // Generar un nuevo ID de pedido (simulado)
+        const newId = `OP-${String(data.length + 1).padStart(3, '0')}`;
+        setData([...data, { 
+          ...values, 
+          key: Date.now(), 
+          idPedido: newId,
+          productos: productoItems 
+        }]);
       }
       setModalOpen(false);
       setEditing(null);
+      setProductoItems([]);
       form.resetFields();
     });
   };
@@ -157,16 +174,105 @@ export default function OrdenPedidoVentas() {
         onOk={handleOk}
       >
         <Form form={form} layout="vertical">
-          <Form.Item label="ID Pedido" name="idPedido" rules={[{ required: true, message: "Ingrese el ID de pedido" }]}> <Input /> </Form.Item>
+          {editing && (
+            <div style={{ marginBottom: 16 }}>
+              <Typography.Text strong>ID Pedido: </Typography.Text>
+              <Typography.Text>{editing.idPedido}</Typography.Text>
+            </div>
+          )}
           <Form.Item label="Cliente" name="cliente" rules={[{ required: true, message: "Ingrese el cliente" }]}> <Input /> </Form.Item>
           <Form.Item label="Empleado" name="empleado" rules={[{ required: true, message: "Ingrese el empleado" }]}> <Input /> </Form.Item>
           <Form.Item label="Fecha Pedido" name="fechaPedido" rules={[{ required: true, message: "Ingrese la fecha de pedido" }]}> <Input type="date" /> </Form.Item>
           <Form.Item label="Fecha Entrega" name="fechaEntrega" rules={[{ required: true, message: "Ingrese la fecha de entrega" }]}> <Input type="date" /> </Form.Item>
           <Form.Item label="Hora Entrega" name="horaEntrega" rules={[{ required: true, message: "Ingrese la hora de entrega" }]}> <Input type="time" /> </Form.Item>
           <Form.Item label="Envío" name="envio" valuePropName="checked">
-            <Input type="checkbox" />
+            <Switch />
           </Form.Item>
         </Form>
+        <div style={{ marginTop: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <Title level={5} style={{ margin: 0 }}>Productos del Pedido</Title>
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />} 
+              onClick={() => setProductoItems([...productoItems, { nombre: '', cantidad: 1, precioUnitario: 0 }])}
+            >
+              Agregar Producto
+            </Button>
+          </div>
+          <Table
+            dataSource={productoItems}
+            pagination={false}
+            size="small"
+            rowKey={(record, index) => index?.toString() || '0'}
+            columns={[
+              { 
+                title: 'Producto', 
+                dataIndex: 'nombre',
+                width: '40%',
+                render: (text: string, record: ProductoPedido, index: number) => (
+                  <Input
+                    value={text}
+                    onChange={(e) => {
+                      const newDetalle = [...productoItems];
+                      newDetalle[index] = { ...record, nombre: e.target.value };
+                      setProductoItems(newDetalle);
+                    }}
+                  />
+                )
+              },
+              { 
+                title: 'Cantidad', 
+                dataIndex: 'cantidad',
+                width: '25%',
+                render: (value: number, record: ProductoPedido, index: number) => (
+                  <InputNumber
+                    min={1}
+                    value={value}
+                    onChange={(value) => {
+                      const newDetalle = [...productoItems];
+                      newDetalle[index] = { ...record, cantidad: value || 1 };
+                      setProductoItems(newDetalle);
+                    }}
+                  />
+                )
+              },
+              { 
+                title: 'Precio Unitario', 
+                dataIndex: 'precioUnitario',
+                width: '25%',
+                render: (value: number, record: ProductoPedido, index: number) => (
+                  <InputNumber
+                    min={0}
+                    value={value}
+                    onChange={(value) => {
+                      const newDetalle = [...productoItems];
+                      newDetalle[index] = { ...record, precioUnitario: value || 0 };
+                      setProductoItems(newDetalle);
+                    }}
+                    prefix="$"
+                  />
+                )
+              },
+              {
+                title: '',
+                width: '10%',
+                render: (_: any, _record: ProductoPedido, index: number) => (
+                  <Button
+                    type="text"
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() => {
+                      const newDetalle = [...productoItems];
+                      newDetalle.splice(index, 1);
+                      setProductoItems(newDetalle);
+                    }}
+                  />
+                )
+              }
+            ]}
+          />
+        </div>
       </Modal>
       <Modal
         open={detalleOpen}
