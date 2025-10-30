@@ -121,10 +121,6 @@ const menuItems = [
         label: "Empleados",
       },
       {
-        key: "maestros/direcciones",
-        label: "Direcciones",
-      },
-      {
         key: "maestros/unidades",
         label: "Unidades",
       },

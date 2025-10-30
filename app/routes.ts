@@ -31,7 +31,6 @@ export default [
 		route("/maestros", "./routes/maestros.tsx", [
 			route("recetas", "./routes/maestros/recetas.tsx"),
 			route("empleados", "./routes/maestros/empleados.tsx"),
-			route("direcciones", "./routes/maestros/direcciones.tsx"),
 			route("unidades", "./routes/maestros/unidades.tsx"),
 		]),
 	]),
