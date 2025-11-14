@@ -1,5 +1,9 @@
-import OrdenesProduccion from "./ordenes-produccion";
+import { Outlet } from "react-router-dom";
 
 export default function Produccion() {
-  return <OrdenesProduccion />;
+  return (
+  <div style={{ padding: "2rem" }}>
+      <Outlet />
+  </div>
+  )
 }
