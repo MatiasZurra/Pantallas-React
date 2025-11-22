@@ -101,8 +101,8 @@ export default function UnidadesMaestros() {
   const { Title } = Typography;
 
   return (
-    <div style={{ padding: 24 }}>
-      <Title level={2} style={{ marginBottom: 16 }}>Unidades de medida</Title>
+    <div style={{width:'100%', padding: 24 }}>
+      <Title level={2} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>Unidades de medida</Title>
       <div style={{ marginBottom: 16, display: "flex", gap: 16 }}>
         <Input.Search
           placeholder="Buscar unidad de medida..."

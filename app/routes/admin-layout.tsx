@@ -92,6 +92,16 @@ const menuItems = [
     key: "mantenimiento",
     icon: <ShopOutlined style={{ color: '#eb2f96' }} />,
     label: "Mantenimiento",
+    children: [
+      {
+        key: "mantenimiento/ordenes-mantenimiento",
+        label: "Órdenes de mantenimiento",
+      },
+      {
+        key: "mantenimiento/maquinas",
+        label: "Máquinas",
+      }
+    ]
   },
   {
     key: "stock",

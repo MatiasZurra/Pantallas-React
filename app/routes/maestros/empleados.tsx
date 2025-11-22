@@ -159,8 +159,9 @@ export default function EmpleadosMaestros() {
 
   return (
     <div style={{ padding: 24, width: '100%' }}>
-      <Title level={2} style={{ marginBottom: 16 }}>Empleados</Title>
-      <div style={{ marginBottom: 16, display: "flex", gap: 16 }}>
+        <Title level={2} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>Empleados</Title>
+      
+      <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
         <Input.Search
           placeholder="Buscar empleado..."
           value={busqueda}

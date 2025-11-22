@@ -98,9 +98,9 @@ export default function RecetasMaestros() {
   const { Title } = Typography;
 
   return (
-    <div style={{ padding: 24 }}>
-      <Title level={2} style={{ marginBottom: 16 }}>Recetas</Title>
-      <div style={{ marginBottom: 16, display: "flex", gap: 16 }}>
+    <div style={{ width:'100%' ,padding: 24 }}>
+      <Title level={2} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>Recetas</Title>
+      <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
         <Input.Search
           placeholder="Buscar receta..."
           value={busqueda}

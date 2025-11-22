@@ -24,12 +24,15 @@ export default [
 			route("ordenes-produccion", "./routes/ordenes-produccion.tsx"),
 			route("recetas", "./routes/maestros/recetas.tsx"),
 		]),
-		route("/mantenimiento", "./routes/mantenimiento.tsx"),
+		route("/mantenimiento", "./routes/mantenimiento.tsx",[
+			route("ordenes-mantenimiento", "./routes/mantenimiento/ordenes-mantenimiento.tsx"),
+			route("maquinas", "./routes/mantenimiento/maquinas.tsx"),
+		]),
 		route("/stock", "./routes/stock.tsx", [
 			route("materia-prima", "./routes/stock/materia-prima.tsx"),
 			route("productos", "./routes/stock/productos.tsx"),
 		]),
-		route("/reportes", "./routes/reportes.tsx"),
+		
 		route("/maestros", "./routes/maestros.tsx", [
 			route("empleados", "./routes/maestros/empleados.tsx"),
 			route("unidades", "./routes/maestros/unidades.tsx"),

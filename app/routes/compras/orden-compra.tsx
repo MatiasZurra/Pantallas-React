@@ -143,10 +143,10 @@ export default function OrdenCompraCompras() {
   ];
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <Title level={2}>Órdenes de Compra</Title>
-      </div>
+    <div style={{ width:'100%', padding: 24 }}>
+      
+        <Title level={2} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>Órdenes de Compra</Title>
+    
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Input.Search
           placeholder="Buscar orden de compra..."

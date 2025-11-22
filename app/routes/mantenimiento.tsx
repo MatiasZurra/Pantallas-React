@@ -1,5 +1,9 @@
-import OrdenesMantenimiento from "./ordenes-mantenimiento";
+import {Outlet} from "react-router-dom";
 
 export default function Mantenimiento() {
-  return <OrdenesMantenimiento />;
+  return (
+     <div >
+      <Outlet />
+    </div>
+  );
 }

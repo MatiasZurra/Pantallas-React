@@ -137,10 +137,10 @@ export default function PagosClienteVentas() {
   ];
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <Title level={2}>Pagos de Clientes</Title>
-      </div>
+    <div style={{width:'100%', padding: 24 }}>
+      
+        <Title level={2} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>Pagos de Clientes</Title>
+    
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
         <Input.Search
           placeholder="Buscar pago..."

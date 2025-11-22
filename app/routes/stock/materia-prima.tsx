@@ -73,18 +73,11 @@ export default function StockMateriaPrima() {
   ];
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
+    <div style={{ width:'100%', padding: 24 }}>
       {/* Encabezado */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
-        <Title level={2}>Stock de Materia Prima</Title>
-      </div>
+
+        <Title level={2} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>Stock de Materia Prima</Title>
+      
 
       {/* Barra de búsqueda */}
       <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
